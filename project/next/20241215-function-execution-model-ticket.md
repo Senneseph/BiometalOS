@@ -1,6 +1,11 @@
-# Agent Instructions: Function Execution Model
+# 🎫 TICKET: Function Execution Model
 
-## Project: Function-Execution-Model
+**Ticket ID**: 20241215-function-execution-model
+**Project**: Function-Execution-Model
+**Status**: 🟡 WAITING FOR DEPENDENCIES
+**Priority**: MEDIUM
+**Assignee**: Runtime Team
+**Dependencies**: API-Specifications v1.0
 
 ### Overview
 The Function Execution Model project implements the application layer where programs specify which functions they want to run on which hardware through service/deadline requests. This is the core of the FuncOS vision - pure userland applications with no direct system access, all hardware requests mediated through safe service APIs.

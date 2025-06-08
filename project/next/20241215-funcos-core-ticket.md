@@ -1,6 +1,10 @@
-# Agent Instructions: FuncOS Core
+# 🎫 TICKET: FuncOS Core
 
-## Project: FuncOS-Core
+**Ticket ID**: 20241215-funcos-core
+**Project**: FuncOS-Core
+**Status**: 🟢 READY TO START
+**Priority**: HIGH
+**Assignee**: Kernel Team
 
 ### Overview
 FuncOS Core is the hardware abstraction operating system that provides unprecedented, safe access to ALL hardware as OS services. This is the foundational layer that replaces direct hardware access with function-level service requests.

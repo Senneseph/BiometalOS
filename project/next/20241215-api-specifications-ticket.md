@@ -1,6 +1,10 @@
-# Agent Instructions: API Specifications
+# 🎫 TICKET: API Specifications
 
-## Project: API-Specifications
+**Ticket ID**: 20241215-api-specifications
+**Project**: API-Specifications
+**Status**: 🟢 READY TO START
+**Priority**: HIGH
+**Assignee**: API Team
 
 ### Overview
 The API Specifications project defines the complete interface contracts for all layers of the FuncOS/Project Biometal architecture. This is the source of truth for all inter-component communication and the foundation for specification-driven development.

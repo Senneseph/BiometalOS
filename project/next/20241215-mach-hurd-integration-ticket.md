@@ -1,6 +1,10 @@
-# Agent Instructions: Mach-Hurd Integration
+# 🎫 TICKET: Mach-Hurd Integration
 
-## Project: Mach-Hurd-Integration
+**Ticket ID**: 20241215-mach-hurd-integration
+**Project**: Mach-Hurd-Integration
+**Status**: 🟢 READY TO START
+**Priority**: HIGH
+**Assignee**: Microkernel Team
 
 ### Overview
 The Mach-Hurd Integration project adapts the GNU Mach microkernel and Hurd translators to provide the foundational microkernel architecture for FuncOS. This creates the robust, service-oriented foundation that enables safe hardware abstraction and the function-level execution model.

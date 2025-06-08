@@ -1,6 +1,11 @@
-# Agent Instruction Template
+# 🎫 TICKET TEMPLATE
 
-## Project: [PROJECT_NAME]
+**Ticket ID**: YYYYMMDD-project-name
+**Project**: [PROJECT_NAME]
+**Status**: 🟢 READY TO START / 🟡 WAITING / 🔴 BLOCKED
+**Priority**: HIGH / MEDIUM / LOW
+**Assignee**: [TEAM_NAME]
+**Dependencies**: [DEPENDENCY_LIST]
 
 ### Overview
 [Brief description of the sub-project and its role in the FuncOS/Project Biometal architecture]

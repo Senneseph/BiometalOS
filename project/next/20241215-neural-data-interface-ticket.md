@@ -1,6 +1,11 @@
-# Agent Instructions: Neural Data Interface
+# 🎫 TICKET: Neural Data Interface
 
-## Project: Neural-Data-Interface
+**Ticket ID**: 20241215-neural-data-interface
+**Project**: Neural-Data-Interface
+**Status**: 🟡 WAITING FOR DEPENDENCIES
+**Priority**: MEDIUM
+**Assignee**: ML Team
+**Dependencies**: FuncOS-Core basic services
 
 ### Overview
 The Neural Data Interface project implements Project Biometal - the data collection layer that captures ALL data input and output from FuncOS operations and makes it available to neural networks and ML services. This is the "biometal" between hardware and higher-level services, enabling AI-driven optimization of the entire system.
