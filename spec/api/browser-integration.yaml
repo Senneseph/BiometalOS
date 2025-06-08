@@ -1,0 +1,423 @@
+# Project Biometal - Browser Integration API Specification
+# Defines APIs for WebAXP network API and browser-to-hardware access
+
+openapi: 3.0.3
+info:
+  title: FuncOS Browser Integration API
+  description: |
+    Browser integration APIs for Project Biometal's FuncOS.
+    Enables secure browser-to-hardware access via WebAXP network API,
+    providing sandboxed hardware access for web applications.
+  version: "0.1.0"
+  contact:
+    name: Project Biometal
+    url: https://github.com/Senneseph/BiometalOS
+
+servers:
+  - url: http://localhost:8080/api/v1/browser
+    description: Development server
+  - url: wss://localhost:8080/ws/browser
+    description: WebSocket interface for real-time communication
+
+paths:
+  # === WebAXP Network API ===
+  /webaxp/capabilities:
+    get:
+      summary: Get available hardware capabilities for web access
+      description: Retrieve hardware capabilities that can be safely exposed to web applications
+      tags: [WebAXP]
+      responses:
+        '200':
+          description: Available capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebCapabilities'
+
+  /webaxp/request:
+    post:
+      summary: Request hardware access from web application
+      description: Submit a hardware access request with security constraints
+      tags: [WebAXP]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HardwareAccessRequest'
+      responses:
+        '200':
+          description: Access granted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessGrant'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessDenial'
+
+  # === Sandbox Management ===
+  /sandbox:
+    post:
+      summary: Create new browser sandbox
+      description: Create an isolated execution environment for web applications
+      tags: [Sandbox]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxRequest'
+      responses:
+        '201':
+          description: Sandbox created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+
+  /sandbox/{sandbox-id}:
+    get:
+      summary: Get sandbox status
+      tags: [Sandbox]
+      parameters:
+        - name: sandbox-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sandbox status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxStatus'
+    
+    delete:
+      summary: Destroy sandbox
+      tags: [Sandbox]
+      parameters:
+        - name: sandbox-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Sandbox destroyed
+
+  # === Security & Permissions ===
+  /permissions:
+    get:
+      summary: Get current permission grants
+      tags: [Security]
+      parameters:
+        - name: origin
+          in: query
+          schema:
+            type: string
+          description: Web application origin
+      responses:
+        '200':
+          description: Permission grants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PermissionGrant'
+
+  /permissions/request:
+    post:
+      summary: Request permissions for web application
+      tags: [Security]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermissionRequest'
+      responses:
+        '200':
+          description: Permission decision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionResponse'
+
+  # === Function Execution Bridge ===
+  /execute:
+    post:
+      summary: Execute function from web application
+      description: Execute a FuncOS function with web application context
+      tags: [Execution]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebExecutionRequest'
+      responses:
+        '200':
+          description: Function executed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebExecutionResult'
+
+  # === Real-time Communication ===
+  /stream/{stream-id}:
+    get:
+      summary: Get stream information
+      tags: [Streaming]
+      parameters:
+        - name: stream-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stream information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamInfo'
+
+components:
+  schemas:
+    WebCapabilities:
+      type: object
+      properties:
+        hardware:
+          type: array
+          items:
+            type: string
+          description: Available hardware capabilities
+        functions:
+          type: array
+          items:
+            type: string
+          description: Available function categories
+        security_level:
+          type: string
+          enum: [minimal, standard, enhanced]
+        sandbox_features:
+          type: array
+          items:
+            type: string
+
+    HardwareAccessRequest:
+      type: object
+      required: [origin, capability, justification]
+      properties:
+        origin:
+          type: string
+          description: Web application origin
+        capability:
+          type: string
+          description: Requested hardware capability
+        justification:
+          type: string
+          description: Reason for hardware access
+        duration:
+          type: integer
+          description: Requested access duration in seconds
+        constraints:
+          type: object
+          description: Access constraints and limits
+
+    AccessGrant:
+      type: object
+      properties:
+        grant_id:
+          type: string
+        capability:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        constraints:
+          type: object
+        access_token:
+          type: string
+          description: Token for accessing the capability
+
+    AccessDenial:
+      type: object
+      properties:
+        reason:
+          type: string
+          enum: [insufficient_permissions, security_policy, resource_unavailable, invalid_request]
+        message:
+          type: string
+        retry_after:
+          type: integer
+          description: Seconds to wait before retry
+
+    SandboxRequest:
+      type: object
+      required: [origin]
+      properties:
+        origin:
+          type: string
+        resource_limits:
+          type: object
+          properties:
+            memory:
+              type: integer
+            cpu_time:
+              type: integer
+            network_bandwidth:
+              type: integer
+        permissions:
+          type: array
+          items:
+            type: string
+
+    Sandbox:
+      type: object
+      properties:
+        sandbox_id:
+          type: string
+        origin:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended, terminated]
+        created_at:
+          type: string
+          format: date-time
+        resource_usage:
+          type: object
+        permissions:
+          type: array
+          items:
+            type: string
+
+    SandboxStatus:
+      type: object
+      properties:
+        sandbox_id:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended, terminated]
+        uptime:
+          type: integer
+          description: Uptime in seconds
+        resource_usage:
+          type: object
+          properties:
+            memory_used:
+              type: integer
+            cpu_time_used:
+              type: integer
+            network_bytes:
+              type: integer
+
+    PermissionGrant:
+      type: object
+      properties:
+        permission:
+          type: string
+        origin:
+          type: string
+        granted_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        scope:
+          type: object
+
+    PermissionRequest:
+      type: object
+      required: [origin, permissions]
+      properties:
+        origin:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        justification:
+          type: string
+        user_interaction:
+          type: boolean
+          description: Whether user interaction is available
+
+    PermissionResponse:
+      type: object
+      properties:
+        granted:
+          type: array
+          items:
+            type: string
+        denied:
+          type: array
+          items:
+            type: string
+        pending:
+          type: array
+          items:
+            type: string
+        expires_at:
+          type: string
+          format: date-time
+
+    WebExecutionRequest:
+      type: object
+      required: [function_id, sandbox_id]
+      properties:
+        function_id:
+          type: string
+        sandbox_id:
+          type: string
+        inputs:
+          type: object
+        timeout:
+          type: integer
+          description: Execution timeout in milliseconds
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+
+    WebExecutionResult:
+      type: object
+      properties:
+        execution_id:
+          type: string
+        status:
+          type: string
+          enum: [success, error, timeout, denied]
+        outputs:
+          type: object
+        execution_time:
+          type: integer
+          description: Execution time in milliseconds
+        error:
+          type: string
+
+    StreamInfo:
+      type: object
+      properties:
+        stream_id:
+          type: string
+        type:
+          type: string
+          enum: [hardware_events, function_results, metrics]
+        status:
+          type: string
+          enum: [active, paused, closed]
+        subscribers:
+          type: integer
+        data_rate:
+          type: number
+          description: Data rate in messages per second
