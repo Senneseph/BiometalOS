@@ -62,7 +62,7 @@ RUN mkdir -p \
     /workspace/docs
 
 # Create scripts directory (scripts will be mounted at runtime)
-RUN mkdir -p /workspace/scripts
+RUN mkdir -p /workspace/develop
 
 # Development server setup
 EXPOSE 8080 2345 3000

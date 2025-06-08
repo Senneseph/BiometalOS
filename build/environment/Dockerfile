@@ -64,7 +64,7 @@ RUN mkdir -p \
     /workspace/cache
 
 # Create scripts directory (scripts will be mounted at runtime)
-RUN mkdir -p /workspace/scripts
+RUN mkdir -p /workspace/develop
 
 # Set up build cache directories
 RUN mkdir -p \
