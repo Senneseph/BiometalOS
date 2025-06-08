@@ -1,0 +1,147 @@
+name: Project Biometal
+codename: FuncOS
+description: "Hardware-aware, function-oriented OS with neural scheduling interface"
+version: "0.1.0"
+repository: "https://github.com/Senneseph/BiometalOS"
+
+# === Core Philosophy ===
+approach: "specification-first"
+build_strategy: "off-the-shelf-components"
+memory_model: "controlled-unsafe"
+execution_model: "functional-actualization"
+
+# === Primary Interface ===
+interface:
+  primary: "docker-compose up"
+  configuration: ".env + config/*.yaml"
+  profiles: ["dev", "build", "test", "dist", "docs", "all"]
+  
+# === Service Architecture ===
+services:
+  profiler:
+    description: "Hardware detection and configuration"
+    purpose: "Detect optimal build targets and runtime parameters"
+    dependencies: ["host-hardware-access"]
+    
+  spec-validator:
+    description: "Specification validation and linting"
+    purpose: "Ensure all specs are valid before build/runtime"
+    dependencies: []
+    
+  app:
+    description: "FuncOS application development environment"
+    purpose: "Live development with hot reload and debugging"
+    dependencies: ["spec-validator"]
+    ports: [8080, 2345]
+    
+  build:
+    description: "Specification-driven build actualizer"
+    purpose: "Transform specs into executable artifacts"
+    dependencies: ["spec-validator", "profiler"]
+    
+  dist:
+    description: "Distribution and VM testing"
+    purpose: "Package and test in virtualized environments"
+    dependencies: ["build"]
+    
+  docs:
+    description: "Living documentation system"
+    purpose: "Generate and serve specification-driven docs"
+    dependencies: []
+
+# === Target Architectures ===
+architectures:
+  primary: "x86_64"
+  supported: ["x86_64", "arm64"]
+  detection: "automatic"
+  
+# === Toolchain Requirements ===
+toolchain:
+  primary: "zig"
+  alternatives: ["rust", "gcc", "clang"]
+  version_strategy: "locked"
+  
+off_shelf_components:
+  - name: "zig-toolchain"
+    source: "docker.io/zigtools/zig:0.12.0"
+    purpose: "Primary compilation toolchain"
+  - name: "qemu-system"
+    source: "docker.io/qemu/qemu:8.0"
+    purpose: "VM testing and emulation"
+  - name: "alpine-base"
+    source: "docker.io/alpine:latest"
+    purpose: "Lightweight container base"
+
+# === Remote Agent Optimization ===
+remote_agent:
+  parallel_safe: true
+  idempotent: true
+  zero_dependencies: true
+  hardware_aware: true
+  
+  capabilities:
+    - "hardware-profiling"
+    - "specification-validation"
+    - "parallel-builds"
+    - "vm-testing"
+    - "neural-interface-stubbing"
+    
+  optimization:
+    build_caching: true
+    spec_caching: true
+    parallel_services: true
+    resource_limits: true
+
+# === System Requirements ===
+requirements:
+  host_os: ["linux", "macos", "windows"]
+  dependencies: ["docker", "docker-compose"]
+  optional: ["kvm", "hardware-virtualization"]
+  
+  resources:
+    ram_minimum: "2GB"
+    ram_recommended: "8GB"
+    disk_minimum: "5GB"
+    disk_recommended: "20GB"
+    cpu_cores: "2+"
+
+# === Development Modes ===
+modes:
+  development:
+    description: "Live development with hot reload"
+    services: ["app", "spec-validator"]
+    
+  build:
+    description: "Full build pipeline"
+    services: ["profiler", "spec-validator", "build"]
+    
+  test:
+    description: "Complete testing suite"
+    services: ["build", "dist"]
+    
+  all:
+    description: "All services for comprehensive development"
+    services: ["profiler", "spec-validator", "app", "build", "dist", "docs"]
+
+# === Integration Points ===
+integrations:
+  zealos:
+    enabled: true
+    purpose: "Legacy compatibility and inspiration"
+    
+  neural_interface:
+    enabled: true
+    mode: "stub"
+    purpose: "Function-level hardware optimization training"
+    
+  webaxp:
+    compliance: "strict"
+    validation: "enabled"
+    
+# === Quality Assurance ===
+quality:
+  specification_driven: true
+  idempotent_builds: true
+  deterministic_output: true
+  hardware_portable: true
+  agent_friendly: true
