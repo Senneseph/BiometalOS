@@ -1,0 +1,47 @@
+{
+  "validation_timestamp": "2025-06-08T23:25:47Z",
+  "spec_directory": "./spec/api",
+  "validation_method": "docker",
+  "validated_specs": [
+    {
+      "name": "browser-integration",
+      "file": "./spec/api/browser-integration.yaml",
+      "status": "validated"
+    }
+,
+    {
+      "name": "core",
+      "file": "./spec/api/core.yaml",
+      "status": "validated"
+    }
+,
+    {
+      "name": "hardware",
+      "file": "./spec/api/hardware.yaml",
+      "status": "validated"
+    }
+,
+    {
+      "name": "neural",
+      "file": "./spec/api/neural.yaml",
+      "status": "validated"
+    }
+,
+    {
+      "name": "security-capabilities",
+      "file": "./spec/api/security-capabilities.yaml",
+      "status": "validated"
+    }
+,
+    {
+      "name": "service-discovery",
+      "file": "./spec/api/service-discovery.yaml",
+      "status": "validated"
+    }
+  ],
+  "validation_tools": {
+    "docker": "available",
+    "openapi_generator": "docker:openapitools/openapi-generator-cli:latest",
+    "python_yaml": "docker:python:3.9-slim"
+  }
+}
