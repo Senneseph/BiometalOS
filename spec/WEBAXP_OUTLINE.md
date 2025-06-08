@@ -1,48 +1,72 @@
-**Preliminary Guide for WebAXP (Web Application Experience Project)** — an idempotent build system spec — written as a reference document for anyone tasked with onboarding a project into the WebAXP ecosystem.
+**WebAXP (Web Application Experience Project)** — an API-first, specification-driven development ecosystem where `/spec` is the source of truth for all system components.
 
 ---
 
-# 🧱 WebAXP Preliminary Build System Specification
+# 🧱 WebAXP: API-First Development Specification
 
 ## 🌐 Purpose
 
-WebAXP aims to create an **idempotent**, **environment-agnostic**, and **developer-friendly** build system. It ensures that **any project** can be cloned, built, tested, and developed **entirely inside a container**, requiring only:
+WebAXP creates an **API-first**, **specification-driven**, and **system-aware** development ecosystem. The core principle:
+
+> **Everything starts with API. `/spec` contains the seed of all other subsystems.**
+
+The system ensures that **any project** can be understood, built, tested, and deployed **entirely from its specifications**, requiring only:
 
 * `git` for source retrieval
 * `docker` (or compatible OCI runtime) for execution
+* **API specifications** as the single source of truth
 
-**No native dependencies. No setup instructions. No excuses.**
+**No native dependencies. No manual documentation. No implementation guesswork.**
 
 ---
 
 ## ✅ Core Principles
 
-### 1. **Idempotent**
+### 1. **API-First Architecture**
 
-> The build process must produce the same result, given the same inputs, every time, from scratch.
+> Everything starts with API. All subsystems are generated from `/spec` definitions.
 
-* Use **locked dependency versions** (e.g., `requirements.txt`, `package-lock.json`, pinned Git SHAs)
-* Rebuild images and artifacts *from zero* on each CI run or local build
-* Avoid dependence on non-versioned global state (e.g., `$HOME/.cargo`, `/usr/bin/python`)
+* **API specifications** define interfaces, data structures, and behaviors
+* **System specifications** define target platforms and implementation strategies
+* **Documentation** is generated from API specs, not written manually
+* **Build systems** are actualized from specifications, not custom scripts
 
-### 2. **Container-Only Execution**
+### 2. **Specification-Driven Generation**
 
-> All build, test, and run steps must execute **inside a Docker container**.
+> `/spec` contains the seed of all other subsystems, including `/docs`.
 
-* No developer should install compilers, interpreters, or toolchains locally
-* Use `Dockerfile` or `docker-compose.yml` to define the complete environment
-* Provide **entrypoint scripts** that run inside the container to perform useful tasks (e.g., `./scripts/build.sh`, `./scripts/test.sh`)
+* `/spec` → `/docs`: API documentation, system guides, implementation notes
+* `/spec` → `/build`: Build instructions, toolchain requirements, target configurations
+* `/spec` → `/app`: Application scaffolding, interface implementations
+* `/spec` → `/dist`: Distribution packages, deployment configurations
 
-### 3. **Zero Local Configuration**
+### 3. **System-Aware Implementation**
+
+> Specifications define "which ways it works on which systems" for target platforms.
+
+* **Target-specific implementations** from unified API specifications
+* **Hardware-aware optimizations** based on system capabilities
+* **Platform abstractions** that maintain API consistency across targets
+* **Graceful degradation** for unsupported features on specific systems
+
+### 4. **Container-Only Execution**
+
+> All build, test, and run steps execute **inside Docker containers**.
+
+* No developer installs compilers, interpreters, or toolchains locally
+* Use `docker-compose.yml` to define complete environment orchestration
+* Specifications drive container configuration and service definitions
+
+### 5. **Zero Local Configuration**
 
 > Cloning and building should be a one-liner:
 
 ```sh
-git clone https://your.repo/project && cd project && ./run.sh
+git clone https://your.repo/project && cd project && docker-compose up
 ```
 
-* `run.sh` is a universal entrypoint wrapper (see below)
-* No `.env`, `.bashrc`, or system dependencies required
+* `docker-compose` is the universal interface
+* Configuration via `.env` files and specification-driven defaults
 
 ---
 
@@ -50,16 +74,38 @@ git clone https://your.repo/project && cd project && ./run.sh
 
 ```txt
 project/
-├── Dockerfile             # Build environment
-├── docker-compose.yml     # Optional: multi-container orchestration
-├── run.sh                 # Universal entrypoint (recommended)
-├── scripts/               # Build/test scripts (inside container)
-│   ├── build.sh
-│   ├── test.sh
-│   └── devshell.sh
-├── .webaxp/               # Metadata/config for the agent
-│   └── manifest.yml       # Describes tasks, requirements, roles
-└── src/                   # Source code
+├── spec/                   # 🎯 SOURCE OF TRUTH - API & System Specifications
+│   ├── api/               # API definitions (OpenAPI, GraphQL, gRPC, etc.)
+│   │   ├── core.yaml      # Core system APIs
+│   │   ├── hardware.yaml  # Hardware abstraction APIs
+│   │   └── neural.yaml    # Neural interface APIs
+│   ├── systems/           # Target system specifications
+│   │   ├── x86_64.yaml    # x86_64 implementation details
+│   │   ├── arm64.yaml     # ARM64 implementation details
+│   │   └── embedded.yaml  # Embedded system constraints
+│   ├── build.yaml         # Build requirements & strategies
+│   ├── docs.yaml          # Documentation generation rules
+│   └── PROJECT_SKETCH.md  # High-level project vision
+├── app/                   # 🏗️ GENERATED - Application implementation
+│   ├── environment/       # Development environment
+│   └── src/              # Source code (scaffolded from specs)
+├── build/                 # 🏗️ GENERATED - Build instructions
+│   ├── environment/       # Build environment
+│   └── targets/          # Target-specific build configs
+├── dist/                  # 🏗️ GENERATED - Distribution packages
+│   ├── environment/       # Testing environment
+│   └── packages/         # Built artifacts
+├── docs/                  # 📚 GENERATED - Documentation
+│   ├── environment/       # Documentation environment
+│   ├── api/              # API documentation (from spec/api/)
+│   ├── systems/          # System-specific guides (from spec/systems/)
+│   └── guides/           # Implementation guides
+├── config/                # Runtime configuration
+├── scripts/               # Automation scripts
+├── docker-compose.yml     # Service orchestration
+├── .env                   # Environment configuration
+└── .webaxp/               # WebAXP metadata
+    └── manifest.yml       # Project manifest
 ```
 
 ---

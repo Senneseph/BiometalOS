@@ -1,0 +1,401 @@
+# Project Biometal - Core System API Specification
+# Defines the fundamental APIs for FuncOS function-oriented execution
+
+openapi: 3.0.3
+info:
+  title: FuncOS Core API
+  description: |
+    Core APIs for Project Biometal's FuncOS - a function-oriented operating system
+    with neural scheduling interface and hardware-aware execution.
+  version: "0.1.0"
+  contact:
+    name: Project Biometal
+    url: https://github.com/Senneseph/BiometalOS
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: unix:///var/run/funcos/core.sock
+    description: Unix socket interface
+
+paths:
+  # === Function Management ===
+  /functions:
+    get:
+      summary: List all registered functions
+      description: Retrieve all functions currently registered in the FuncOS system
+      tags: [Functions]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, all]
+          description: Filter functions by status
+      responses:
+        '200':
+          description: List of functions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Function'
+    
+    post:
+      summary: Register a new function
+      description: Register a function for execution in the FuncOS system
+      tags: [Functions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionRegistration'
+      responses:
+        '201':
+          description: Function registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+
+  /functions/{functionId}:
+    get:
+      summary: Get function details
+      tags: [Functions]
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Function details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+
+  /functions/{functionId}/execute:
+    post:
+      summary: Execute a function
+      description: Execute a registered function with specified inputs
+      tags: [Functions]
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecutionRequest'
+      responses:
+        '200':
+          description: Function executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResult'
+
+  # === Scheduler Interface ===
+  /scheduler/status:
+    get:
+      summary: Get scheduler status
+      tags: [Scheduler]
+      responses:
+        '200':
+          description: Scheduler status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchedulerStatus'
+
+  /scheduler/queue:
+    get:
+      summary: Get execution queue
+      tags: [Scheduler]
+      responses:
+        '200':
+          description: Current execution queue
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueuedExecution'
+
+  # === Memory Management ===
+  /memory/status:
+    get:
+      summary: Get memory status
+      tags: [Memory]
+      responses:
+        '200':
+          description: Memory status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryStatus'
+
+  /memory/allocations:
+    get:
+      summary: List memory allocations
+      tags: [Memory]
+      responses:
+        '200':
+          description: Current memory allocations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MemoryAllocation'
+
+  # === Introspection ===
+  /introspection/traces:
+    get:
+      summary: Get execution traces
+      description: Retrieve execution traces for neural interface training
+      tags: [Introspection]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: function_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Execution traces
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExecutionTrace'
+
+components:
+  schemas:
+    Function:
+      type: object
+      required: [id, name, signature, status]
+      properties:
+        id:
+          type: string
+          description: Unique function identifier
+        name:
+          type: string
+          description: Human-readable function name
+        signature:
+          $ref: '#/components/schemas/FunctionSignature'
+        status:
+          type: string
+          enum: [active, inactive, error]
+        metadata:
+          type: object
+          description: Function metadata
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    FunctionSignature:
+      type: object
+      required: [inputs, outputs]
+      properties:
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Parameter'
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Parameter'
+        constraints:
+          type: object
+          description: Execution constraints
+
+    Parameter:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [int8, int16, int32, int64, uint8, uint16, uint32, uint64, float32, float64, bool, string, bytes, pointer]
+        size:
+          type: integer
+          description: Size in bytes (for fixed-size types)
+        description:
+          type: string
+
+    FunctionRegistration:
+      type: object
+      required: [name, signature, implementation]
+      properties:
+        name:
+          type: string
+        signature:
+          $ref: '#/components/schemas/FunctionSignature'
+        implementation:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [native, wasm, interpreted]
+            code:
+              type: string
+              description: Function implementation code
+            entry_point:
+              type: string
+
+    ExecutionRequest:
+      type: object
+      required: [inputs]
+      properties:
+        inputs:
+          type: object
+          description: Input parameters as key-value pairs
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 10
+          default: 5
+        timeout:
+          type: integer
+          description: Execution timeout in milliseconds
+        optimization_hints:
+          type: object
+          description: Hints for the execution actualizer
+
+    ExecutionResult:
+      type: object
+      required: [status, execution_id]
+      properties:
+        execution_id:
+          type: string
+        status:
+          type: string
+          enum: [success, error, timeout]
+        outputs:
+          type: object
+          description: Output values as key-value pairs
+        execution_time:
+          type: integer
+          description: Execution time in microseconds
+        memory_used:
+          type: integer
+          description: Memory used in bytes
+        error:
+          type: string
+          description: Error message if status is error
+
+    SchedulerStatus:
+      type: object
+      properties:
+        active_functions:
+          type: integer
+        queued_executions:
+          type: integer
+        completed_executions:
+          type: integer
+        failed_executions:
+          type: integer
+        average_execution_time:
+          type: number
+          description: Average execution time in microseconds
+
+    QueuedExecution:
+      type: object
+      properties:
+        execution_id:
+          type: string
+        function_id:
+          type: string
+        priority:
+          type: integer
+        queued_at:
+          type: string
+          format: date-time
+        estimated_start:
+          type: string
+          format: date-time
+
+    MemoryStatus:
+      type: object
+      properties:
+        total_memory:
+          type: integer
+          description: Total system memory in bytes
+        used_memory:
+          type: integer
+          description: Used memory in bytes
+        free_memory:
+          type: integer
+          description: Free memory in bytes
+        allocations_count:
+          type: integer
+
+    MemoryAllocation:
+      type: object
+      properties:
+        allocation_id:
+          type: string
+        function_id:
+          type: string
+        size:
+          type: integer
+          description: Allocation size in bytes
+        address:
+          type: string
+          description: Memory address (hex)
+        allocated_at:
+          type: string
+          format: date-time
+
+    ExecutionTrace:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        function_id:
+          type: string
+        execution_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          description: Execution duration in microseconds
+        memory_access:
+          type: array
+          items:
+            type: object
+            properties:
+              address:
+                type: string
+              operation:
+                type: string
+                enum: [read, write]
+              size:
+                type: integer
+        hardware_counters:
+          type: object
+          description: Hardware performance counters
+        optimization_applied:
+          type: array
+          items:
+            type: string

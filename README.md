@@ -111,31 +111,79 @@ docker-compose up build             # Execute build pipeline
 docker-compose up test              # Run test suite
 ```
 
-## 📋 **Philosophy: Specification-First**
+## 📋 **Philosophy: API-First, Specification-Driven**
 
-> **"Perfect specifications enable trivial builds from off-the-shelf components"**
+> **"Everything starts with API. `/spec` contains the seed of all other subsystems."**
 
-1. **Define specifications** in `spec/` and `config/` directories
-2. **Validate specifications** before any build attempts
-3. **Use off-the-shelf components** wherever possible
-4. **Build only what's truly custom** to the project
+### **🎯 Core Principle**
+All subsystems are **generated** from API and system specifications:
+
+- **📚 `/docs`** ← Generated from API specs (`spec/api/*.yaml`)
+- **🏗️ `/build`** ← Generated from system specs (`spec/systems/*.yaml`)
+- **💻 `/app`** ← Scaffolded from API definitions
+- **📦 `/dist`** ← Built from generated configurations
+
+### **🔄 Development Flow**
+1. **Define APIs** in `spec/api/` (OpenAPI format)
+2. **Define system implementations** in `spec/systems/` (per architecture)
+3. **Generate everything else** from specifications
+4. **Validate and build** using off-the-shelf components
 
 ### **Directory Structure**
 ```
 BiometalOS/
-├── spec/                   # Specifications (WHAT to build)
-│   ├── build.yaml         # Build requirements & targets
-│   ├── PROJECT_SKETCH.md  # High-level project description
-│   ├── FuncOS_OUTLINE.md  # Core OS concepts
-│   └── WEBAXP_OUTLINE.md  # Build system specification
-├── config/                # Configuration (HOW to build)
+├── spec/                   # 🎯 SOURCE OF TRUTH - API & System Specifications
+│   ├── api/               # API definitions (OpenAPI format)
+│   │   ├── core.yaml      # Core system APIs (functions, scheduler, memory)
+│   │   ├── hardware.yaml  # Hardware abstraction APIs
+│   │   └── neural.yaml    # Neural interface APIs (MCP on steroids)
+│   ├── systems/           # Target system specifications
+│   │   ├── x86_64.yaml    # How APIs work on x86_64
+│   │   └── arm64.yaml     # How APIs work on ARM64
+│   ├── build.yaml         # Build requirements & strategies
+│   ├── docs.yaml          # Documentation generation rules
+│   └── *.md               # High-level project vision
+├── config/                # Runtime configuration
 │   └── services.yaml      # Service runtime configuration
-├── app/                   # Application source & environment
-├── build/                 # Build instructions & environment  
-├── dist/                  # Distribution & testing environment
-├── docs/                  # Documentation & environment
+├── app/                   # 🏗️ GENERATED - Application implementation
+├── build/                 # 🏗️ GENERATED - Build instructions
+├── dist/                  # 🏗️ GENERATED - Distribution packages
+├── docs/                  # 📚 GENERATED - Documentation
 └── scripts/               # Automation scripts
 ```
+
+## 🔌 **API Specifications**
+
+**Project Biometal** defines three core APIs that drive the entire system:
+
+### **📋 Core API** (`spec/api/core.yaml`)
+- **Function Management**: Register, execute, and monitor functions
+- **Scheduler Interface**: Queue management and execution control
+- **Memory Management**: Allocation tracking and optimization
+- **Introspection**: Execution traces for neural training
+
+### **⚙️ Hardware API** (`spec/api/hardware.yaml`)
+- **Hardware Discovery**: CPU, memory, and feature detection
+- **Execution Actualizer**: Hardware-aware optimization
+- **Performance Monitoring**: Real-time performance counters
+- **Target Selection**: Choose optimal execution units
+
+### **🧠 Neural API** (`spec/api/neural.yaml`)
+- **Training Data Collection**: Function I/O + hardware metrics
+- **Optimization Hints**: AI-generated performance suggestions
+- **Scheduling Predictions**: Neural-driven task scheduling
+- **Model Management**: Training status and model updates
+
+> **This is "MCP on steroids"** - supplying function inputs/outputs to neural nets for training on hardware requests at the function level.
+
+## 🏗️ **System Implementations**
+
+Each target architecture defines **how** the APIs work on that system:
+
+- **`spec/systems/x86_64.yaml`**: Intel/AMD implementation details
+- **`spec/systems/arm64.yaml`**: ARM64 implementation details
+
+These specs define instruction sets, performance characteristics, optimization strategies, and platform-specific features.
 
 ## 🔧 **Development Workflow**
 

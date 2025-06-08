@@ -5,16 +5,29 @@ version: "0.1.0"
 repository: "https://github.com/Senneseph/BiometalOS"
 
 # === Core Philosophy ===
-approach: "specification-first"
+approach: "api-first"
+paradigm: "specification-driven-generation"
 build_strategy: "off-the-shelf-components"
 memory_model: "controlled-unsafe"
 execution_model: "functional-actualization"
 
+# === API-First Architecture ===
+api_first:
+  source_of_truth: "/spec"
+  generation_targets:
+    - "/docs"     # Documentation generated from API specs
+    - "/build"    # Build configs generated from system specs
+    - "/app"      # Application scaffolding from API definitions
+    - "/dist"     # Distribution packages from build specs
+  principle: "Everything starts with API. /spec contains the seed of all other subsystems."
+
 # === Primary Interface ===
 interface:
   primary: "docker-compose up"
-  configuration: ".env + config/*.yaml"
+  configuration: ".env + config/*.yaml + spec/*.yaml"
   profiles: ["dev", "build", "test", "dist", "docs", "all"]
+  api_specs: "spec/api/*.yaml"
+  system_specs: "spec/systems/*.yaml"
   
 # === Service Architecture ===
 services:

@@ -115,15 +115,35 @@ stages:
     description: "Validate all specifications"
     dependencies: []
     outputs: ["validation-report.json"]
-    
+    validates:
+      - "spec/api/*.yaml"
+      - "spec/systems/*.yaml"
+      - "spec/build.yaml"
+      - "spec/docs.yaml"
+
+  generate:
+    description: "Generate code and documentation from specifications"
+    dependencies: ["validate"]
+    outputs: ["generated-code", "generated-docs"]
+    generates:
+      - source: "spec/api/*.yaml"
+        target: "app/src/api/"
+        type: "api_implementation_stubs"
+      - source: "spec/systems/*.yaml"
+        target: "build/targets/"
+        type: "build_configurations"
+      - source: "spec/docs.yaml"
+        target: "docs/"
+        type: "documentation"
+
   profile:
     description: "Detect hardware capabilities"
     dependencies: ["validate"]
     outputs: ["hardware-profile.yaml"]
-    
+
   prepare:
     description: "Prepare build environment"
-    dependencies: ["profile"]
+    dependencies: ["generate", "profile"]
     actions:
       - "fetch-toolchain"
       - "setup-cross-compilation"
