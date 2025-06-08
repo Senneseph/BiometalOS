@@ -13,6 +13,7 @@ services:
     volumes:
       - ./spec:/workspace/spec:ro
       - ./config:/workspace/config
+      - ./scripts:/workspace/scripts:ro
       - /proc/cpuinfo:/host/cpuinfo:ro
       - /sys:/host/sys:ro
     command: ["./scripts/hardware-profile.sh"]
@@ -25,6 +26,7 @@ services:
     volumes:
       - ./spec:/workspace/spec:ro
       - ./config:/workspace/config:ro
+      - ./scripts:/workspace/scripts:ro
     working_dir: /workspace
     command: ["sh", "-c", "apk add --no-cache yq && ./scripts/validate-specs.sh"]
     profiles: ["validate", "build", "all"]
@@ -45,6 +47,7 @@ services:
       - ./app/src:/workspace/src
       - ./spec:/workspace/spec:ro
       - ./config:/workspace/config:ro
+      - ./scripts:/workspace/scripts:ro
     ports:
       - "${DEV_PORT:-8080}:8080"
       - "${DEBUG_PORT:-2345}:2345"
@@ -70,6 +73,7 @@ services:
       - ./dist:/workspace/dist
       - ./spec:/workspace/spec:ro
       - ./config:/workspace/config:ro
+      - ./scripts:/workspace/scripts:ro
     depends_on:
       - spec-validator
       - profiler
@@ -87,6 +91,7 @@ services:
       - ./dist:/workspace/dist
       - ./spec:/workspace/spec:ro
       - ./config:/workspace/config:ro
+      - ./scripts:/workspace/scripts:ro
     depends_on:
       - build
     profiles: ["test", "dist", "all"]
@@ -101,6 +106,7 @@ services:
     volumes:
       - ./docs:/workspace/docs
       - ./spec:/workspace/spec:ro
+      - ./scripts:/workspace/scripts:ro
     ports:
       - "${DOCS_PORT:-3000}:3000"
     profiles: ["docs", "all"]
