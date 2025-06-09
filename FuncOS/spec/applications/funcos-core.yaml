@@ -1,0 +1,214 @@
+# Project Biometal - FuncOS Core Application Specification
+# WebAXP-compliant application specification for function-oriented operating system
+
+application:
+  name: "funcos-core"
+  version: "0.1.0"
+  description: "Function-oriented operating system with hardware abstraction and neural scheduling"
+  type: "operating-system"
+  target_platforms: ["x86_64", "arm64", "arduino"]
+  
+architecture:
+  pattern: "layered-microservices"
+  layers:
+    - name: "hardware-abstraction"
+      description: "Hardware discovery and abstraction layer"
+      components: ["hardware-profiler", "device-drivers", "platform-interface"]
+      
+    - name: "core-services"
+      description: "Core OS services and function management"
+      components: ["function-manager", "scheduler", "memory-manager", "service-discovery"]
+      depends_on: ["hardware-abstraction"]
+      
+    - name: "security-layer"
+      description: "Capability-based security and access control"
+      components: ["capability-manager", "access-control", "security-policies"]
+      depends_on: ["core-services"]
+      
+    - name: "api-gateway"
+      description: "External API interface and service endpoints"
+      components: ["rest-api", "function-executor", "status-reporter"]
+      depends_on: ["security-layer"]
+
+components:
+  function-manager:
+    description: "Function registration, validation, and lifecycle management"
+    source_files:
+      - "app/src/kernel/function_manager.zig"
+      - "app/src/api/core_impl.zig"
+    apis:
+      - "spec/api/core.yaml"
+    memory_requirements:
+      heap: "16MB"
+      stack: "2MB"
+    performance_requirements:
+      function_registration_time: "1ms"
+      function_execution_overhead: "10us"
+      
+  scheduler:
+    description: "Function execution scheduler with neural optimization"
+    source_files:
+      - "app/src/kernel/scheduler/scheduler.zig"
+      - "app/src/kernel/neural/neural.zig"
+    dependencies:
+      - "function-manager"
+    memory_requirements:
+      heap: "8MB"
+      stack: "1MB"
+    performance_requirements:
+      scheduling_latency: "100us"
+      context_switch_time: "50us"
+      
+  hardware-profiler:
+    description: "Hardware detection and capability profiling"
+    source_files:
+      - "app/src/kernel/hardware/profiler.zig"
+    apis:
+      - "spec/api/hardware.yaml"
+    memory_requirements:
+      heap: "4MB"
+      stack: "512KB"
+
+build:
+  toolchain: "zig"
+  targets:
+    - name: "x86_64-linux"
+      optimization: "ReleaseFast"
+      features: ["sse2", "avx"]
+    - name: "arm64-linux"
+      optimization: "ReleaseFast"
+      features: ["neon"]
+    - name: "arduino"
+      optimization: "ReleaseSmall"
+      features: ["embedded"]
+      
+  dependencies:
+    specifications:
+      - "spec/api/core.yaml"
+      - "spec/api/hardware.yaml"
+      - "spec/api/service-discovery.yaml"
+      - "spec/api/security-capabilities.yaml"
+    source_files:
+      - "app/src/**/*.zig"
+    build_scripts:
+      - "build/scripts/build-funcos.sh"
+      - "build/scripts/test-funcos.sh"
+      
+  artifacts:
+    - name: "funcos-kernel"
+      type: "executable"
+      format: "elf"
+      output: "dist/kernel/funcos-kernel"
+      
+    - name: "funcos-userland"
+      type: "archive"
+      format: "tar.gz"
+      output: "dist/userland/funcos-userland.tar.gz"
+      
+  idempotency:
+    enabled: true
+    checksum_file: "build/.funcos-core-checksum"
+    cache_directory: "build/.build-cache"
+
+testing:
+  unit_tests:
+    framework: "zig_test"
+    coverage_target: "80%"
+    test_files:
+      - "app/src/**/*_test.zig"
+      
+  integration_tests:
+    environment: "qemu"
+    test_scenarios:
+      - "function_registration_and_execution"
+      - "hardware_discovery_and_profiling"
+      - "service_discovery_and_communication"
+      - "security_capability_enforcement"
+      
+  performance_tests:
+    benchmarks:
+      - name: "function_execution_latency"
+        target: "10us"
+      - name: "memory_allocation_speed"
+        target: "1us"
+      - name: "service_discovery_time"
+        target: "100us"
+
+deployment:
+  environments:
+    - name: "development"
+      containerized: true
+      docker_image: "funcos-dev"
+      
+    - name: "testing"
+      virtualized: true
+      vm_platform: "qemu"
+      
+    - name: "production"
+      bare_metal: true
+      supported_hardware:
+        - "x86_64_server"
+        - "arm64_embedded"
+        - "arduino_uno_r4"
+
+integration:
+  external_systems:
+    - name: "biometal_reporter"
+      interface: "ipc"
+      purpose: "neural_data_collection"
+      
+    - name: "iflib"
+      interface: "function_api"
+      purpose: "function_specification_library"
+      
+  data_flows:
+    - from: "function_execution"
+      to: "biometal_reporter"
+      data: "performance_metrics"
+      
+    - from: "hardware_profiler"
+      to: "scheduler"
+      data: "hardware_capabilities"
+
+observability:
+  metrics:
+    - "function_execution_count"
+    - "function_execution_time"
+    - "memory_usage"
+    - "cpu_utilization"
+    - "service_discovery_requests"
+    - "security_policy_violations"
+    
+  logging:
+    level: "info"
+    format: "structured_json"
+    destinations:
+      - "stdout"
+      - "system_journal"
+
+performance:
+  latency:
+    function_call_overhead: "10us"
+    service_discovery: "100us"
+    capability_check: "1us"
+    
+  throughput:
+    functions_per_second: "100000"
+    service_requests_per_second: "50000"
+    
+  resource_usage:
+    max_memory_usage: "512MB"
+    max_cpu_usage: "80%"
+    max_disk_usage: "1GB"
+
+compliance:
+  webaxp:
+    version: "1.0"
+    specification_driven: true
+    idempotent_builds: true
+    containerized_development: true
+    
+  coding_standards:
+    language: "zig"
+    style_guide: "zig_standard"
+    documentation: "inline_and_generated"

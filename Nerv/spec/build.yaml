@@ -17,12 +17,28 @@ architectures:
       description: "Primary development target"
       toolchain: "zig"
       features: ["sse2", "avx"]
-      
+
     - name: "arm64"
       description: "Apple M1/M2+, Raspberry Pi 4/5"
       toolchain: "zig"
       features: ["neon", "crypto"]
-      
+
+    - name: "arm-cortex-m4"
+      description: "Arduino Uno R4, STM32F4 series"
+      toolchain: "zig"
+      features: ["thumb2", "fpu"]
+      memory_constraints:
+        flash: "256KB"
+        sram: "32KB"
+
+    - name: "esp32"
+      description: "ESP32 microcontroller"
+      toolchain: "zig"
+      features: ["wifi", "bluetooth", "dual_core"]
+      memory_constraints:
+        flash: "4MB"
+        sram: "520KB"
+
   detection:
     strategy: "runtime"
     fallback: "x86_64"
@@ -52,37 +68,90 @@ toolchain:
 
 # === Build Artifacts ===
 artifacts:
+  # Desktop/Server kernel
   kernel:
-    name: "funcos-kernel"
+    name: "nerv-kernel"
     format: "elf"
-    output: "./dist/kernel/funcos-kernel.elf"
+    output: "./dist/kernel/nerv-kernel.elf"
     components:
-      - "scheduler"
-      - "function-manager"
+      - "microkernel"
+      - "ipc-manager"
       - "memory-manager"
-      - "io-bus"
-      - "neural-interface-stub"
-      
-  bootloader:
-    name: "funcos-boot"
-    format: "bin"
-    output: "./dist/boot/funcos-boot.bin"
-    compatibility: ["grub2", "uefi"]
-    
-  userland:
-    name: "funcos-userland"
-    format: "tar.gz"
-    output: "./dist/userland/funcos-userland.tar.gz"
+      - "task-scheduler"
+    dependencies:
+      - "spec/api/*.yaml"
+      - "app/src/kernel/**/*.zig"
+    build_command: "./build/scripts/build-kernel.sh"
+
+  # Arduino firmware
+  arduino_firmware:
+    name: "nerv-arduino"
+    format: "hex"
+    output: "./dist/firmware/nerv-arduino.hex"
+    target: "arm-cortex-m4"
     components:
-      - "bloom-shell"
-      - "function-loader"
-      - "introspection-tools"
-      
-  iso:
-    name: "funcos-complete"
-    format: "iso"
-    output: "./dist/funcos-complete.iso"
-    bootable: true
+      - "microkernel"
+      - "task-scheduler"
+      - "serial-interface"
+      - "biometal-reporter"
+    dependencies:
+      - "spec/applications/arduino-demo.yaml"
+      - "spec/systems/arduino.yaml"
+      - "app/src/arduino/**/*.zig"
+      - "../FuncOS/app/src/arduino/**/*.zig"
+      - "../Biometal/app/src/arduino/**/*.zig"
+    build_command: "./build/scripts/build-arduino.sh"
+    idempotent: true
+    checksum_file: "./build/.arduino-build-checksum"
+
+  # ESP32 firmware
+  esp32_firmware:
+    name: "nerv-esp32"
+    format: "bin"
+    output: "./dist/firmware/nerv-esp32.bin"
+    target: "esp32"
+    components:
+      - "microkernel"
+      - "task-scheduler"
+      - "wifi-interface"
+      - "serial-interface"
+      - "biometal-reporter"
+    dependencies:
+      - "spec/systems/esp32.yaml"
+      - "app/src/esp32/**/*.zig"
+    build_command: "./build/scripts/build-esp32.sh"
+    idempotent: true
+    checksum_file: "./build/.esp32-build-checksum"
+
+  # QEMU test image
+  qemu_test:
+    name: "nerv-qemu"
+    format: "elf"
+    output: "./dist/test/nerv-qemu.elf"
+    target: "arm-cortex-m4"
+    emulation: true
+    dependencies:
+      - "arduino_firmware"
+    test_command: "./build/scripts/test-qemu.sh"
+    idempotent: true
+
+# === Idempotent Build Configuration ===
+idempotency:
+  enabled: true
+  checksum_algorithm: "sha256"
+  dependency_tracking: true
+  incremental_builds: true
+
+  cache_locations:
+    - "./build/.build-cache/"
+    - "./build/.dependency-cache/"
+    - "./build/.checksum-cache/"
+
+  invalidation_triggers:
+    - "spec_file_changes"
+    - "source_file_changes"
+    - "build_script_changes"
+    - "toolchain_version_changes"
 
 # === Off-the-Shelf Components ===
 components:

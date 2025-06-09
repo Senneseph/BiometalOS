@@ -1,0 +1,190 @@
+# Project Biometal - Arduino Demo Application Specification
+# WebAXP-compliant application specification for Nerv + FuncOS + Biometal demonstration
+
+application:
+  name: "arduino-demo"
+  version: "0.1.0"
+  description: "Nerv microkernel + FuncOS + Biometal demonstration for Arduino Uno R4 WiFi"
+  type: "embedded-firmware"
+  target_platform: "arduino-uno-r4"
+  
+architecture:
+  pattern: "layered-microkernel"
+  layers:
+    - name: "hardware-abstraction"
+      description: "Arduino hardware abstraction layer"
+      components: ["uart", "timer", "gpio", "memory"]
+      
+    - name: "nerv-microkernel"
+      description: "Minimal microkernel with task scheduling and IPC"
+      components: ["scheduler", "memory-manager", "ipc", "interrupt-handler"]
+      depends_on: ["hardware-abstraction"]
+      
+    - name: "funcos-layer"
+      description: "Function-oriented execution system"
+      components: ["function-registry", "execution-engine", "performance-tracker"]
+      depends_on: ["nerv-microkernel"]
+      
+    - name: "biometal-reporter"
+      description: "Neural data collection and reporting"
+      components: ["data-collector", "json-serializer", "serial-reporter"]
+      depends_on: ["funcos-layer"]
+
+components:
+  nerv-microkernel:
+    source_files:
+      - "app/src/arduino/nerv_kernel.zig"
+      - "app/src/arduino/scheduler.zig"
+      - "app/src/arduino/memory.zig"
+      - "app/src/arduino/ipc.zig"
+    memory_requirements:
+      flash: "64KB"
+      sram: "8KB"
+    performance_requirements:
+      context_switch_time: "10us"
+      interrupt_latency: "2us"
+      
+  hardware-abstraction:
+    source_files:
+      - "app/src/arduino/hal/arduino_hal.zig"
+      - "app/src/arduino/hal/uart.zig"
+      - "app/src/arduino/hal/timer.zig"
+    hardware_interfaces:
+      - "UART0"
+      - "SysTick"
+      - "NVIC"
+      - "GPIO"
+    memory_requirements:
+      flash: "16KB"
+      sram: "2KB"
+
+build:
+  toolchain: "zig"
+  target: "thumb-freestanding-eabihf"
+  cpu: "cortex_m4"
+  optimization: "ReleaseSmall"
+  
+  dependencies:
+    specifications:
+      - "spec/systems/arduino.yaml"
+      - "spec/api/*.yaml"
+    source_files:
+      - "app/src/arduino/**/*.zig"
+      - "../FuncOS/app/src/arduino/**/*.zig"
+      - "../Biometal/app/src/arduino/**/*.zig"
+    build_scripts:
+      - "build/scripts/build-arduino.sh"
+      
+  artifacts:
+    - name: "nerv-arduino.elf"
+      type: "executable"
+      format: "elf32-littlearm"
+      
+    - name: "nerv-arduino.hex"
+      type: "firmware"
+      format: "intel_hex"
+      purpose: "arduino_flashing"
+      
+  idempotency:
+    enabled: true
+    checksum_file: "build/.arduino-demo-checksum"
+    cache_directory: "build/.build-cache"
+
+memory_layout:
+  flash:
+    total_size: "256KB"
+    base_address: "0x00000000"
+    sections:
+      - name: "vectors"
+        start: "0x00000000"
+        size: "1KB"
+      - name: "nerv_kernel"
+        start: "0x00000400"
+        size: "63KB"
+      - name: "funcos_layer"
+        start: "0x00010000"
+        size: "128KB"
+      - name: "biometal_reporter"
+        start: "0x00030000"
+        size: "64KB"
+        
+  sram:
+    total_size: "32KB"
+    base_address: "0x20000000"
+    sections:
+      - name: "kernel_heap"
+        start: "0x20000000"
+        size: "8KB"
+      - name: "task_stacks"
+        start: "0x20002000"
+        size: "16KB"
+      - name: "function_workspace"
+        start: "0x20006000"
+        size: "4KB"
+      - name: "biometal_buffers"
+        start: "0x20007000"
+        size: "4KB"
+
+testing:
+  emulation:
+    platform: "qemu-system-arm"
+    machine: "mps2-an385"
+    cpu: "cortex-m4"
+    memory: "32M"
+    
+  validation_criteria:
+    - name: "system_initialization"
+      description: "All components initialize successfully"
+      expected_output: "Project Biometal - Arduino Demo"
+      
+    - name: "function_execution"
+      description: "Functions execute with correct results"
+      expected_output: "Function Demo"
+      
+    - name: "biometal_reporting"
+      description: "JSON reports are generated"
+      expected_output: "BIOMETAL REPORT"
+
+deployment:
+  target_hardware:
+    - name: "Arduino Uno R4 WiFi"
+      mcu: "Renesas RA4M1"
+      architecture: "ARM Cortex-M4"
+      flash_size: "256KB"
+      sram_size: "32KB"
+      clock_speed: "48MHz"
+      
+  flashing:
+    method: "arduino_ide"
+    file_format: "intel_hex"
+    baud_rate: 115200
+    
+  communication:
+    interface: "uart_serial"
+    baud_rate: 115200
+    data_bits: 8
+    parity: "none"
+    stop_bits: 1
+
+observability:
+  logging:
+    level: "info"
+    output: "uart_serial"
+    format: "structured"
+    
+  metrics:
+    collection_interval: "1000ms"
+    reporting_interval: "5000ms"
+    metrics:
+      - "system_uptime"
+      - "active_task_count"
+      - "function_call_count"
+      - "memory_usage"
+      - "cpu_utilization"
+
+compliance:
+  webaxp:
+    version: "1.0"
+    specification_driven: true
+    idempotent_builds: true
+    containerized_development: true

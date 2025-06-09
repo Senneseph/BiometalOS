@@ -31,10 +31,10 @@ validate:
 	../tools/scripts/validate-api-specs-docker.sh --spec-dir spec/api
 	docker-compose --profile validate up
 
-# Build FuncOS components
-build: validate
-	@echo "Building FuncOS components..."
-	docker-compose --profile build up --build
+# Build FuncOS components (WebAXP Idempotent)
+build: validate validate-app-specs
+	@echo "Building FuncOS components (idempotent)..."
+	@./scripts/build-funcos.sh
 
 # Run test suite
 test: build
@@ -47,11 +47,18 @@ docs:
 	../tools/scripts/generate-api-docs.sh --spec-dir spec/api --format html
 	docker-compose --profile docs up
 
+# Validate application specifications
+validate-app-specs:
+	@echo "Validating FuncOS application specifications..."
+	@[ -f "../spec/applications/funcos-core.yaml" ] || (echo "❌ Missing application spec" && exit 1)
+	@echo "✅ Application specifications validated"
+
 # Clean build artifacts
 clean:
 	@echo "Cleaning FuncOS build artifacts..."
 	docker-compose down --volumes --remove-orphans
 	docker system prune -f
+	rm -rf .build-cache .funcos-*-checksum
 
 # Complete build pipeline
 all: setup validate build test docs

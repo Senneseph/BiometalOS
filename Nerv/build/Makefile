@@ -81,6 +81,23 @@ dev-logs:
 dev-shell:
 	docker-compose exec app /bin/bash
 
+# Arduino-specific targets
+arduino-build:
+	@echo "Building Nerv for Arduino..."
+	./build/scripts/build-arduino.sh
+
+arduino-test: arduino-build
+	@echo "Testing Arduino firmware in QEMU..."
+	./build/scripts/test-qemu.sh
+
+arduino-interactive: arduino-build
+	@echo "Starting interactive QEMU session..."
+	./build/scripts/test-qemu.sh --interactive
+
+arduino-clean:
+	@echo "Cleaning Arduino build artifacts..."
+	rm -rf build/arduino dist/firmware dist/test
+
 # Specification-driven development
 spec-first: validate docs
 	@echo "Specification-first development ready!"
