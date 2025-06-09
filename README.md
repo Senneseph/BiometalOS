@@ -11,84 +11,139 @@
 ## 🎯 **Quick Start**
 
 ```bash
-# Clone and start development environment
+# Clone the repository
 git clone https://github.com/Senneseph/BiometalOS.git
 cd BiometalOS
 
-# Start all services (hardware profiling, validation, development)
-docker-compose up -d
+# Choose a project to work on
+cd FuncOS     # Function-oriented operating system
+cd Nerv       # Minimal microkernel
+cd Biometal   # Reporting & benchmarking layer
+cd IFLib      # Intermediate Form Library
 
-# Or start specific services
-docker-compose up profiler spec-validator  # Setup and validation
-docker-compose up app                       # Development environment
-docker-compose up build                     # Build pipeline
-docker-compose up test                      # Testing suite
+# Start development environment for chosen project
+make setup    # Initialize development environment
+make dev      # Start development environment
+make build    # Build project components
+make test     # Run test suite
 ```
 
 ## 🏗️ **Architecture Overview**
 
-**Project Biometal** implements **FuncOS** - a function-oriented operating system where:
+**Project Biometal** is a multi-project ecosystem implementing a complete function-oriented computing stack:
 
+### **🔧 FuncOS** - Function-Oriented Operating System
 - 🧮 **Functions are first-class citizens** - All execution is function-based
-- 🔍 **Everything is observable** - Complete introspection of system behavior  
-- 🧠 **Neural scheduling interface** - AI can optimize hardware utilization
 - ⚡ **Hardware-aware execution** - Automatic optimization for target architecture
-- 📋 **Specification-driven** - Build from specs, not custom implementations
+- 🔍 **Service discovery** - Capability-based service management
+- 🛡️ **Security-first** - Capability-based access control
 
-## 🐳 **Service Architecture**
+### **🧠 Nerv** - Minimal Microkernel (Mach/Hurd Inspired)
+- 🏗️ **Microkernel foundation** - Minimal, reliable kernel services
+- 💬 **Message passing** - Efficient IPC mechanisms
+- 🔒 **Process isolation** - Strong security boundaries
+- 🔧 **Modular services** - User-space service architecture
 
-| Service | Purpose | Dependencies |
-|---------|---------|--------------|
-| `profiler` | Hardware detection & optimization | Host hardware access |
-| `spec-validator` | Specification validation | None |
-| `app` | Development environment | `spec-validator` |
-| `build` | Build pipeline actualizer | `spec-validator`, `profiler` |
-| `dist` | Distribution & VM testing | `build` |
-| `docs` | Living documentation | None |
+### **📊 Biometal** - Reporting & Benchmarking Layer
+- 🧠 **Neural data collection** - Function execution pattern recording
+- 📈 **Performance analysis** - Real-time system metrics
+- 🎯 **Optimization hints** - AI-driven performance suggestions
+- 📋 **Benchmarking** - Comprehensive performance validation
 
-## ⚙️ **Configuration**
+### **📚 IFLib** - Intermediate Form Library
+- 📝 **Function specifications** - Standardized function definitions
+- 🏗️ **Architecture optimization** - Multi-architecture implementations
+- 🌐 **Browser integration** - WebAXP network API
+- 🔐 **Permission management** - Secure function execution
 
-### **Environment Variables** (`.env`)
-```bash
-# Core Configuration
-TARGET_ARCH=x86_64          # x86_64, arm64, auto
-BUILD_MODE=debug            # debug, release, profile
-FUNCOS_MODE=development     # development, production, testing
+## 📁 **Repository Structure**
 
-# Hardware Optimization
-HARDWARE_PROFILE=detect     # detect, desktop, server, embedded
-PARALLEL_JOBS=4             # Build parallelization
-NEURAL_INTERFACE=stub       # stub, mock, real, disabled
-
-# Development
-DEV_PORT=8080              # Development server port
-DEBUG_PORT=2345            # Debugger port
-LOG_LEVEL=info             # debug, info, warn, error
+```
+BiometalOS/
+├── FuncOS/         # Function-oriented operating system
+├── Nerv/           # Minimal microkernel (Mach/Hurd inspired)
+├── Biometal/       # Reporting & benchmarking layer
+├── IFLib/          # Intermediate Form Library
+├── project/        # Project management and tickets
+├── tools/          # Shared development utilities
+└── spec/           # High-level project documentation
 ```
 
-### **Custom Configuration**
-```bash
-# Use custom environment
-docker-compose --env-file production.env up
-
-# Override specific settings
-TARGET_ARCH=arm64 BUILD_MODE=release docker-compose up build
+### **Project Structure**
+Each project contains a complete WebAXP-compliant structure:
+```
+{Project}/
+├── spec/           # API specifications and requirements
+├── app/            # Application source code
+├── build/          # Build system and toolchain
+├── dist/           # Built artifacts and testing
+├── docs/           # Documentation and guides
+├── develop/        # Development tools and scripts
+├── config/         # Project-specific configuration
+├── shared/         # Docker configurations
+├── Makefile        # Project build commands
+├── docker-compose.yaml  # Development environment
+└── .env            # Environment variables
 ```
 
-## 🎛️ **Service Profiles**
+## ⚙️ **Project Development**
+
+### **Independent Project Development**
+Each project can be developed independently:
 
 ```bash
-# Development workflow
-docker-compose --profile dev up -d
+# FuncOS - Function-oriented operating system
+cd FuncOS
+make setup          # Initialize development environment
+make zealos-setup   # Setup ZealOS integration
+make build          # Build FuncOS components
+make test           # Run test suite
 
-# Full build pipeline  
-docker-compose --profile build up
+# Nerv - Minimal microkernel
+cd Nerv
+make setup          # Initialize development environment
+make kernel-build   # Build microkernel
+make kernel-test    # Test in QEMU
+make ipc-test       # Test IPC mechanisms
 
-# Testing and validation
-docker-compose --profile test up
+# Biometal - Reporting & benchmarking
+cd Biometal
+make setup          # Initialize development environment
+make collect-data   # Start data collection
+make train-model    # Train ML models
+make benchmark      # Run benchmarks
 
-# Complete environment
-docker-compose --profile all up -d
+# IFLib - Intermediate Form Library
+cd IFLib
+make setup          # Initialize development environment
+make validate-specs # Validate function specifications
+make optimize-funcs # Generate optimized implementations
+make webaxp-test    # Test browser integration
+```
+
+## 🛠️ **Shared Tools**
+
+### **API Validation**
+```bash
+# Validate API specifications for any project
+./tools/scripts/validate-api-specs-docker.sh --spec-dir FuncOS/spec/api
+./tools/scripts/validate-api-specs-docker.sh --spec-dir Biometal/spec/api
+
+# Generate documentation
+./tools/scripts/generate-api-docs.sh --spec-dir IFLib/spec/api --format html
+```
+
+### **Cross-Project Development**
+```bash
+# Validate all projects
+for project in FuncOS Nerv Biometal IFLib; do
+  ./tools/scripts/validate-api-specs-docker.sh --spec-dir $project/spec/api
+done
+
+# Generate documentation for all projects
+for project in FuncOS Nerv Biometal IFLib; do
+  ./tools/scripts/generate-api-docs.sh --spec-dir $project/spec/api --output-dir docs/$project
+done
 ```
 
 ## 🤖 **Remote Agent Support**
@@ -129,50 +184,54 @@ All subsystems are **generated** from API and system specifications:
 3. **Generate everything else** from specifications
 4. **Validate and build** using off-the-shelf components
 
-### **Directory Structure**
+### **Multi-Project Architecture**
 ```
 BiometalOS/
-├── spec/                   # 🎯 SOURCE OF TRUTH - API & System Specifications
-│   ├── api/               # API definitions (OpenAPI format)
-│   │   ├── core.yaml      # Core system APIs (functions, scheduler, memory)
-│   │   ├── hardware.yaml  # Hardware abstraction APIs
-│   │   └── neural.yaml    # Neural interface APIs (MCP on steroids)
-│   ├── systems/           # Target system specifications
-│   │   ├── x86_64.yaml    # How APIs work on x86_64
-│   │   └── arm64.yaml     # How APIs work on ARM64
-│   ├── build.yaml         # Build requirements & strategies
-│   ├── docs.yaml          # Documentation generation rules
-│   └── *.md               # High-level project vision
-├── config/                # Runtime configuration
-│   └── services.yaml      # Service runtime configuration
-├── app/                   # 🏗️ GENERATED - Application implementation
-├── build/                 # 🏗️ GENERATED - Build instructions
-├── dist/                  # 🏗️ GENERATED - Distribution packages
-├── docs/                  # 📚 GENERATED - Documentation
-└── scripts/               # Automation scripts
+├── FuncOS/                # Function-oriented operating system
+│   ├── spec/api/         # Core, hardware, service discovery, security APIs
+│   ├── app/              # FuncOS implementation
+│   ├── build/            # ZealOS integration and build system
+│   └── ...               # Complete WebAXP structure
+├── Nerv/                 # Minimal microkernel
+│   ├── spec/api/         # Kernel, IPC, memory management APIs
+│   ├── app/              # Microkernel implementation
+│   ├── build/            # Kernel build system
+│   └── ...               # Complete WebAXP structure
+├── Biometal/             # Reporting & benchmarking layer
+│   ├── spec/api/         # Neural data collection APIs
+│   ├── app/              # Data collection and ML implementation
+│   ├── build/            # ML pipeline build system
+│   └── ...               # Complete WebAXP structure
+├── IFLib/                # Intermediate Form Library
+│   ├── spec/api/         # Browser integration and function APIs
+│   ├── app/              # Function library implementation
+│   ├── build/            # Multi-architecture optimization
+│   └── ...               # Complete WebAXP structure
+├── project/              # Cross-project management and tickets
+├── tools/                # Shared development utilities
+└── spec/                 # High-level project documentation
 ```
 
 ## 🔌 **API Specifications**
 
-**Project Biometal** defines three core APIs that drive the entire system:
+**Project Biometal** distributes APIs across focused projects:
 
-### **📋 Core API** (`spec/api/core.yaml`)
-- **Function Management**: Register, execute, and monitor functions
-- **Scheduler Interface**: Queue management and execution control
-- **Memory Management**: Allocation tracking and optimization
-- **Introspection**: Execution traces for neural training
+### **🔧 FuncOS APIs**
+- **📋 Core API** (`FuncOS/spec/api/core.yaml`) - Function management, scheduler, memory
+- **⚙️ Hardware API** (`FuncOS/spec/api/hardware.yaml`) - Hardware discovery, optimization, monitoring
+- **🔍 Service Discovery API** (`FuncOS/spec/api/service-discovery.yaml`) - Service registration, capability discovery
+- **🛡️ Security API** (`FuncOS/spec/api/security-capabilities.yaml`) - Capability management, access control
 
-### **⚙️ Hardware API** (`spec/api/hardware.yaml`)
-- **Hardware Discovery**: CPU, memory, and feature detection
-- **Execution Actualizer**: Hardware-aware optimization
-- **Performance Monitoring**: Real-time performance counters
-- **Target Selection**: Choose optimal execution units
+### **🧠 Biometal APIs**
+- **🧠 Neural API** (`Biometal/spec/api/neural.yaml`) - Training data collection, optimization hints, ML integration
 
-### **🧠 Neural API** (`spec/api/neural.yaml`)
-- **Training Data Collection**: Function I/O + hardware metrics
-- **Optimization Hints**: AI-generated performance suggestions
-- **Scheduling Predictions**: Neural-driven task scheduling
-- **Model Management**: Training status and model updates
+### **📚 IFLib APIs**
+- **🌐 Browser Integration API** (`IFLib/spec/api/browser-integration.yaml`) - WebAXP network API, sandbox management
+
+### **🧠 Nerv APIs** (To be created)
+- **Kernel API** - Process management, memory management, exception handling
+- **IPC API** - Message passing, port management, capability transfer
+- **Memory API** - Virtual memory, shared memory, protection
 
 > **This is "MCP on steroids"** - supplying function inputs/outputs to neural nets for training on hardware requests at the function level.
 
@@ -187,67 +246,95 @@ These specs define instruction sets, performance characteristics, optimization s
 
 ## 🔧 **Development Workflow**
 
-### **1. Hardware Profiling**
+### **1. Choose Your Project**
 ```bash
-# Detect optimal configuration for your hardware
-docker-compose up profiler
+# Work on the function-oriented operating system
+cd FuncOS
 
-# View generated profile
-cat config/hardware-profile.yaml
+# Work on the microkernel foundation
+cd Nerv
+
+# Work on neural data collection and analysis
+cd Biometal
+
+# Work on function specifications and browser integration
+cd IFLib
 ```
 
-### **2. Specification Validation**
+### **2. Project Setup**
 ```bash
-# Validate all specifications
-docker-compose up spec-validator
+# Initialize development environment
+make setup
 
-# View validation report
-cat config/validation-report.json
+# Validate API specifications
+make validate
+
+# Generate documentation
+make docs
 ```
 
 ### **3. Development**
 ```bash
-# Start development environment with hot reload
-docker-compose up app
+# Start development environment
+make dev
 
-# Access development server
-open http://localhost:8080
+# View logs
+make dev-logs
+
+# Access development shell
+make dev-shell
 ```
 
-### **4. Building**
+### **4. Building & Testing**
 ```bash
-# Execute full build pipeline
-docker-compose up build
+# Build project components
+make build
 
-# Check build artifacts
-ls -la dist/
+# Run test suite
+make test
+
+# Clean build artifacts
+make clean
 ```
 
-### **5. Testing**
+### **5. Project-Specific Commands**
 ```bash
-# Run in virtualized environment
-docker-compose up dist
+# FuncOS: ZealOS integration
+make zealos-setup && make zealos-build
 
-# View test results
-docker-compose logs dist
+# Nerv: Kernel development
+make kernel-build && make kernel-test
+
+# Biometal: Data collection and ML
+make collect-data && make train-model
+
+# IFLib: Function optimization
+make validate-specs && make optimize-funcs
 ```
 
 ## 🎯 **Key Features**
 
-- 🏗️ **WebAXP Compliant** - Standardized, containerized development
-- 🔍 **Hardware Profiling** - Automatic optimization detection
-- 📋 **Specification Validation** - Catch errors early
-- ⚡ **Parallel Builds** - Multi-architecture support
-- 🧪 **VM Testing** - Automated testing in QEMU
-- 📚 **Living Documentation** - Auto-generated from specifications
+- 🏗️ **Multi-Project Architecture** - Focused, independent development
+- 🔧 **WebAXP Compliant** - Standardized development across all projects
+- 📋 **Specification-Driven** - API-first development workflow
+- 🛠️ **Shared Tooling** - Common validation and documentation tools
+- ⚡ **Parallel Development** - Teams can work independently
+- 🔍 **Independent Environments** - Each project is self-contained
 - 🤖 **Agent-Friendly** - Optimized for AI development assistants
 
 ## 🚀 **Next Steps**
 
-1. **Explore the specifications** in `spec/` directory
-2. **Run hardware profiling** to optimize for your system
-3. **Start development environment** with `docker-compose up app`
-4. **Read the FuncOS concepts** in `spec/FuncOS_OUTLINE.md`
+1. **Choose a project** based on your interests:
+   - **FuncOS** for operating system development
+   - **Nerv** for microkernel architecture
+   - **Biometal** for data analysis and ML
+   - **IFLib** for function specifications and browser integration
+
+2. **Read project documentation** in each project's README.md
+
+3. **Start development** with `cd {Project} && make setup && make dev`
+
+4. **Explore high-level concepts** in `spec/` directory
 
 ---
 
