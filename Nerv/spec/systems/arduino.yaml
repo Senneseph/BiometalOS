@@ -1,0 +1,249 @@
+# Project Biometal - Arduino System Specification
+# Nerv microkernel for Arduino Uno R4 and compatible ARM Cortex-M4 boards
+
+# === Architecture Definition ===
+architecture: "arm-cortex-m4"
+description: "Arduino Uno R4 WiFi and compatible ARM Cortex-M4 microcontrollers"
+family: "embedded"
+
+# === Hardware Specifications ===
+hardware:
+  cpu:
+    core: "ARM Cortex-M4"
+    frequency: "48MHz"
+    instruction_set: "ARMv7E-M"
+    features:
+      - "thumb2"
+      - "fpu"
+      - "dsp"
+    cache:
+      instruction: "none"
+      data: "none"
+    
+  memory:
+    flash:
+      size: "256KB"
+      base_address: "0x00000000"
+      sectors: 128
+      sector_size: "2KB"
+    sram:
+      size: "32KB"
+      base_address: "0x20000000"
+      speed: "1_wait_state"
+    
+  peripherals:
+    uart:
+      - name: "UART0"
+        base: "0x40034000"
+        irq: 21
+        baud_rates: [9600, 19200, 38400, 57600, 115200]
+    gpio:
+      - name: "PORTA"
+        base: "0x41008000"
+        pins: 32
+    timer:
+      - name: "TC0"
+        base: "0x40003800"
+        bits: 32
+        frequency: "48MHz"
+
+# === Memory Layout ===
+memory_layout:
+  # Nerv microkernel (first 64KB)
+  kernel:
+    start: "0x00000000"
+    size: "64KB"
+    sections:
+      - name: "vectors"
+        start: "0x00000000"
+        size: "1KB"
+      - name: "kernel_text"
+        start: "0x00000400"
+        size: "48KB"
+      - name: "kernel_data"
+        start: "0x0000C400"
+        size: "14KB"
+        
+  # FuncOS layer (next 128KB)
+  funcos:
+    start: "0x00010000"
+    size: "128KB"
+    sections:
+      - name: "function_registry"
+        start: "0x00010000"
+        size: "32KB"
+      - name: "function_code"
+        start: "0x00018000"
+        size: "96KB"
+        
+  # Biometal reporter (remaining 64KB)
+  biometal:
+    start: "0x00030000"
+    size: "64KB"
+    sections:
+      - name: "data_buffers"
+        start: "0x00030000"
+        size: "48KB"
+      - name: "reporter_code"
+        start: "0x0003C000"
+        size: "16KB"
+
+# === SRAM Layout ===
+sram_layout:
+  # Kernel heap (8KB)
+  kernel_heap:
+    start: "0x20000000"
+    size: "8KB"
+    
+  # Task stacks (16KB total, 8 tasks × 2KB each)
+  task_stacks:
+    start: "0x20002000"
+    size: "16KB"
+    stack_size: "2KB"
+    max_tasks: 8
+    
+  # Function execution space (4KB)
+  function_space:
+    start: "0x20006000"
+    size: "4KB"
+    
+  # Biometal data buffers (4KB)
+  biometal_buffers:
+    start: "0x20007000"
+    size: "4KB"
+
+# === Boot Configuration ===
+boot:
+  entry_point: "_start"
+  stack_pointer: "0x20008000"  # Top of SRAM
+  vector_table: "0x00000000"
+  
+  initialization_sequence:
+    - "setup_vector_table"
+    - "initialize_clocks"
+    - "setup_uart"
+    - "initialize_memory"
+    - "start_nerv_kernel"
+
+# === Interrupt Configuration ===
+interrupts:
+  vector_table_size: 256
+  priorities: 4  # 4 priority levels
+  
+  handlers:
+    - name: "SysTick"
+      vector: 15
+      priority: 1
+      handler: "nerv_systick_handler"
+    - name: "UART0"
+      vector: 21
+      priority: 2
+      handler: "uart_interrupt_handler"
+    - name: "PendSV"
+      vector: 14
+      priority: 3
+      handler: "nerv_context_switch"
+
+# === Build Configuration ===
+build:
+  toolchain:
+    primary: "zig"
+    target: "thumb-freestanding-eabihf"
+    cpu: "cortex_m4"
+    
+  compiler_flags:
+    base: [
+      "-target", "thumb-freestanding-eabihf",
+      "-mcpu=cortex-m4",
+      "-mfpu=fpv4-sp-d16",
+      "-mfloat-abi=hard"
+    ]
+    optimization:
+      debug: ["-O0", "-g"]
+      release: ["-Os", "-DNDEBUG"]  # Optimize for size
+      
+  linker:
+    script: "arduino_cortex_m4.ld"
+    format: "elf32-littlearm"
+    entry_point: "_start"
+    
+  output_formats:
+    - name: "elf"
+      description: "ELF file for debugging"
+    - name: "hex"
+      description: "Intel HEX for Arduino IDE"
+    - name: "bin"
+      description: "Raw binary for direct flashing"
+
+# === Emulation Support ===
+emulation:
+  qemu:
+    machine: "mps2-an385"
+    cpu: "cortex-m4"
+    memory: "32M"
+    serial: "stdio"
+    
+  renode:
+    platform: "stm32f4_discovery"
+    script: "arduino_demo.resc"
+
+# === Communication Protocols ===
+communication:
+  serial:
+    primary_uart: "UART0"
+    baud_rate: 115200
+    format: "8N1"
+    flow_control: "none"
+    
+  protocols:
+    biometal_reporting:
+      format: "json"
+      compression: "none"
+      max_message_size: 256
+      
+# === Power Management ===
+power:
+  sleep_modes:
+    - name: "idle"
+      description: "CPU stopped, peripherals running"
+      wake_sources: ["interrupt"]
+    - name: "standby"
+      description: "Most peripherals stopped"
+      wake_sources: ["uart", "timer"]
+      
+  clock_management:
+    base_frequency: "48MHz"
+    peripheral_dividers:
+      uart: 1
+      timer: 1
+      gpio: 1
+
+# === Debugging Support ===
+debugging:
+  interfaces:
+    - name: "SWD"
+      pins: ["SWDIO", "SWCLK"]
+    - name: "UART"
+      pins: ["TX", "RX"]
+      
+  features:
+    - "breakpoints"
+    - "memory_inspection"
+    - "register_access"
+    - "real_time_trace"
+
+# === Performance Characteristics ===
+performance:
+  timing:
+    context_switch: "10us"
+    interrupt_latency: "2us"
+    function_call_overhead: "1us"
+    
+  throughput:
+    max_functions_per_second: 1000
+    max_biometal_reports_per_second: 10
+    
+  memory_usage:
+    kernel_overhead: "8KB"
+    per_task_overhead: "2KB"
+    per_function_overhead: "256B"
