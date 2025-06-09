@@ -1,0 +1,424 @@
+# Project Biometal - Service Discovery API Specification
+# Defines APIs for service registration, discovery, and capability management
+
+openapi: 3.0.3
+info:
+  title: FuncOS Service Discovery API
+  description: |
+    Service discovery and registration APIs for Project Biometal's FuncOS.
+    Enables dynamic service registration, capability-based discovery, and
+    service-level agreement management for deadline-driven execution.
+  version: "0.1.0"
+  contact:
+    name: Project Biometal
+    url: https://github.com/Senneseph/BiometalOS
+
+servers:
+  - url: http://localhost:8080/api/v1/discovery
+    description: Development server
+  - url: unix:///var/run/funcos/discovery.sock
+    description: Unix socket interface
+
+paths:
+  # === Service Registration ===
+  /services:
+    get:
+      summary: List all registered services
+      description: Retrieve all services currently registered in the FuncOS system
+      tags: [Services]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, all]
+          description: Filter services by status
+        - name: capability
+          in: query
+          schema:
+            type: string
+          description: Filter services by capability
+      responses:
+        '200':
+          description: List of services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+    
+    post:
+      summary: Register a new service
+      description: Register a service for discovery in the FuncOS system
+      tags: [Services]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRegistration'
+      responses:
+        '201':
+          description: Service registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+
+  /services/{serviceId}:
+    get:
+      summary: Get service details
+      tags: [Services]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Service details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+    
+    put:
+      summary: Update service registration
+      tags: [Services]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceUpdate'
+      responses:
+        '200':
+          description: Service updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+
+    delete:
+      summary: Unregister service
+      tags: [Services]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Service unregistered successfully
+
+  # === Service Discovery ===
+  /discover:
+    post:
+      summary: Discover services by capabilities
+      description: Find services that match specified capability requirements
+      tags: [Discovery]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscoveryRequest'
+      responses:
+        '200':
+          description: Matching services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceMatch'
+
+  # === Health & Status ===
+  /services/{serviceId}/health:
+    get:
+      summary: Check service health
+      tags: [Health]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Service health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /services/{serviceId}/metrics:
+    get:
+      summary: Get service metrics
+      tags: [Metrics]
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Service metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceMetrics'
+
+  # === Service Level Agreements ===
+  /sla:
+    get:
+      summary: List service level agreements
+      tags: [SLA]
+      responses:
+        '200':
+          description: List of SLAs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceLevelAgreement'
+    
+    post:
+      summary: Create service level agreement
+      tags: [SLA]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SLARequest'
+      responses:
+        '201':
+          description: SLA created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceLevelAgreement'
+
+components:
+  schemas:
+    Service:
+      type: object
+      required: [id, name, endpoint, capabilities, status]
+      properties:
+        id:
+          type: string
+          description: Unique service identifier
+        name:
+          type: string
+          description: Human-readable service name
+        endpoint:
+          type: string
+          description: Service endpoint URL or socket path
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capability'
+        status:
+          type: string
+          enum: [active, inactive, maintenance, error]
+        metadata:
+          type: object
+          description: Service metadata
+        registered_at:
+          type: string
+          format: date-time
+        last_heartbeat:
+          type: string
+          format: date-time
+
+    ServiceRegistration:
+      type: object
+      required: [name, endpoint, capabilities]
+      properties:
+        name:
+          type: string
+        endpoint:
+          type: string
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capability'
+        metadata:
+          type: object
+        heartbeat_interval:
+          type: integer
+          description: Heartbeat interval in seconds
+          default: 30
+
+    ServiceUpdate:
+      type: object
+      properties:
+        endpoint:
+          type: string
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capability'
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+        metadata:
+          type: object
+
+    Capability:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+          description: Capability name
+        type:
+          type: string
+          enum: [hardware, computation, storage, network, neural]
+        version:
+          type: string
+          description: Capability version
+        parameters:
+          type: object
+          description: Capability-specific parameters
+        requirements:
+          type: object
+          description: Resource requirements
+        sla:
+          $ref: '#/components/schemas/ServiceLevelAgreement'
+
+    DiscoveryRequest:
+      type: object
+      required: [capabilities]
+      properties:
+        capabilities:
+          type: array
+          items:
+            type: string
+          description: Required capability names
+        constraints:
+          type: object
+          properties:
+            max_latency:
+              type: integer
+              description: Maximum acceptable latency in milliseconds
+            min_throughput:
+              type: integer
+              description: Minimum required throughput
+            location_preference:
+              type: string
+              enum: [local, remote, any]
+        deadline:
+          type: string
+          format: date-time
+          description: Service deadline requirement
+
+    ServiceMatch:
+      type: object
+      properties:
+        service:
+          $ref: '#/components/schemas/Service'
+        match_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: How well the service matches requirements
+        estimated_latency:
+          type: integer
+          description: Estimated latency in milliseconds
+        availability:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Service availability percentage
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        last_check:
+          type: string
+          format: date-time
+        response_time:
+          type: integer
+          description: Health check response time in milliseconds
+        details:
+          type: object
+          description: Detailed health information
+
+    ServiceMetrics:
+      type: object
+      properties:
+        requests_per_second:
+          type: number
+        average_response_time:
+          type: number
+          description: Average response time in milliseconds
+        error_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+        uptime:
+          type: number
+          minimum: 0
+          maximum: 100
+        resource_utilization:
+          type: object
+          properties:
+            cpu:
+              type: number
+            memory:
+              type: number
+            network:
+              type: number
+
+    ServiceLevelAgreement:
+      type: object
+      required: [max_response_time, availability]
+      properties:
+        max_response_time:
+          type: integer
+          description: Maximum response time in milliseconds
+        availability:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Guaranteed availability percentage
+        throughput:
+          type: integer
+          description: Guaranteed minimum throughput
+        deadline_compliance:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Percentage of requests meeting deadlines
+
+    SLARequest:
+      type: object
+      required: [service_id, max_response_time, availability]
+      properties:
+        service_id:
+          type: string
+        max_response_time:
+          type: integer
+        availability:
+          type: number
+        throughput:
+          type: integer
+        penalty_terms:
+          type: object
+          description: SLA violation penalty terms

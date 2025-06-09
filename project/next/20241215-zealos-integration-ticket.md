@@ -1,7 +1,7 @@
 # 🎫 TICKET: ZealOS Integration & WebAXP Foundation
 
 **Ticket ID**: 20241215-zealos-integration
-**Project**: ZealOS-Integration
+**Project**: FuncOS
 **Status**: 🟢 READY TO START
 **Priority**: HIGH
 **Assignee**: ZealOS Integration Team
@@ -38,7 +38,7 @@ ZealOS integration serves as the **foundational layer** for Project Biometal:
 
 ### Project Structure (WebAXP Compliant)
 ```
-ZealOS-Integration/
+FuncOS/
 ├── spec/           # ZealOS build specifications and system definitions
 │   ├── api/        # Build system APIs (if exposing build services)
 │   ├── systems/    # Target architecture specifications
@@ -71,8 +71,8 @@ ZealOS-Integration/
 
 1. **Initialize Project Structure**
    ```bash
-   mkdir -p ZealOS-Integration/{spec,app,build,dist,docs,develop}
-   cd ZealOS-Integration
+   cd FuncOS
+   # Structure already exists from project reorganization
    ```
 
 2. **Configure WebAXP Environment**
@@ -111,7 +111,7 @@ ZealOS-Integration/
 
 3. **Set Environment Variables**
    ```bash
-   export PROJECT_NAME="ZealOS-Integration"
+   export PROJECT_NAME="FuncOS"
    export PROJECT_TYPE="system"
    export ZEALOS_REPO="https://github.com/Senneseph/ZealOS"
    ```

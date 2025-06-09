@@ -1,7 +1,7 @@
 # 🎫 TICKET: Mach-Hurd Integration
 
 **Ticket ID**: 20241215-mach-hurd-integration
-**Project**: Mach-Hurd-Integration
+**Project**: Nerv
 **Status**: 🟢 READY TO START
 **Priority**: HIGH
 **Assignee**: Microkernel Team
@@ -31,7 +31,7 @@ This project is part of the layered FuncOS/Project Biometal architecture:
 
 ### Project Structure (WebAXP Compliant)
 ```
-Mach-Hurd-Integration/
+Nerv/
 ├── spec/           # Microkernel architecture specifications
 ├── app/            # GNU Mach adaptation and Hurd translators
 ├── build/          # Microkernel build system and toolchain
@@ -45,8 +45,8 @@ Mach-Hurd-Integration/
 
 1. **Initialize Project Structure**
    ```bash
-   mkdir -p Mach-Hurd-Integration/{spec,app,build,dist,docs,develop,config}
-   cd Mach-Hurd-Integration
+   cd Nerv
+   # Structure already exists from project reorganization
    ```
 
 2. **Configure WebAXP Environment**
@@ -57,7 +57,7 @@ Mach-Hurd-Integration/
    # Create project configuration
    cat > config/webaxp.yaml << EOF
    project:
-     name: "Mach-Hurd-Integration"
+     name: "Nerv"
      type: "kernel"
      description: "GNU Mach microkernel adaptation for FuncOS"
    
@@ -77,7 +77,7 @@ Mach-Hurd-Integration/
 
 3. **Set Environment Variables**
    ```bash
-   export PROJECT_NAME="Mach-Hurd-Integration"
+   export PROJECT_NAME="Nerv"
    export PROJECT_TYPE="kernel"
    export TOOLCHAIN="zig"
    ```

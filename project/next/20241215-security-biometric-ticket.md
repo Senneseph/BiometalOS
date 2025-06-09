@@ -1,7 +1,7 @@
 # 🎫 TICKET: Security Biometric System
 
 **Ticket ID**: 20241215-security-biometric
-**Project**: Security-Biometric
+**Project**: FuncOS
 **Status**: ⏸️ WAITING FOR RUNTIME MODEL
 **Priority**: LOW
 **Assignee**: Security Team

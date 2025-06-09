@@ -8,14 +8,14 @@ This directory contains all project management documentation, tickets, and workf
 Contains tickets that are ready to be worked on or currently in progress.
 
 **Current Active Tickets:**
-- `20241215-zealos-integration-ticket.md` - **HIGH PRIORITY** - Foundation for all FuncOS development
-- `20241215-browser-network-api-ticket.md` - Browser integration and WebAXP network API
-- `20241215-funcos-core-ticket.md` - Core FuncOS functionality
-- `20241215-function-execution-model-ticket.md` - Function execution and scheduling
-- `20241215-hardware-profiler-ticket.md` - Hardware profiling and optimization
-- `20241215-mach-hurd-integration-ticket.md` - Mach/Hurd microkernel integration
-- `20241215-neural-data-interface-ticket.md` - Neural data collection and AI interface
-- `20241215-security-biometric-ticket.md` - Security and biometric authentication
+- `20241215-zealos-integration-ticket.md` - **HIGH PRIORITY** - Foundation for all FuncOS development (Project: **FuncOS**)
+- `20241215-browser-network-api-ticket.md` - Browser integration and WebAXP network API (Project: **IFLib**)
+- `20241215-funcos-core-ticket.md` - Core FuncOS functionality (Project: **FuncOS**)
+- `20241215-function-execution-model-ticket.md` - Function execution and scheduling (Project: **FuncOS**)
+- `20241215-hardware-profiler-ticket.md` - Hardware profiling and optimization (Project: **FuncOS**)
+- `20241215-mach-hurd-integration-ticket.md` - Mach/Hurd microkernel integration (Project: **Nerv**)
+- `20241215-neural-data-interface-ticket.md` - Neural data collection and AI interface (Project: **Biometal**)
+- `20241215-security-biometric-ticket.md` - Security and biometric authentication (Project: **FuncOS**)
 
 ### `/project/done/` - Completed Tickets
 Contains tickets that have been completed and merged.
@@ -60,16 +60,17 @@ This ticket establishes the foundational build system that all other FuncOS comp
 
 ## 📊 Project Status
 
-| Component | API Spec | Implementation | Integration | Status |
-|-----------|----------|----------------|-------------|---------|
-| **API-Specifications** | ✅ | ✅ | ✅ | **COMPLETED** |
-| **ZealOS-Integration** | 🟢 | ⏳ | ⏳ | **READY TO START** |
-| Browser-Network-API | 🟢 | ⏳ | ⏳ | READY |
-| FuncOS-Core | 🟢 | ⏳ | ⏳ | READY |
-| Function-Execution | 🟢 | ⏳ | ⏳ | READY |
-| Hardware-Profiler | 🟢 | ⏳ | ⏳ | READY |
-| Neural-Data-Interface | 🟢 | ⏳ | ⏳ | READY |
-| Security-Biometric | 🟢 | ⏳ | ⏳ | READY |
+| Component | Project | API Spec | Implementation | Integration | Status |
+|-----------|---------|----------|----------------|-------------|---------|
+| **API-Specifications** | Global | ✅ | ✅ | ✅ | **COMPLETED** |
+| **ZealOS-Integration** | **FuncOS** | 🟢 | ⏳ | ⏳ | **READY TO START** |
+| Browser-Network-API | **IFLib** | 🟢 | ⏳ | ⏳ | READY |
+| FuncOS-Core | **FuncOS** | 🟢 | ⏳ | ⏳ | READY |
+| Function-Execution | **FuncOS** | 🟢 | ⏳ | ⏳ | READY |
+| Hardware-Profiler | **FuncOS** | 🟢 | ⏳ | ⏳ | READY |
+| Mach-Hurd-Integration | **Nerv** | 🟢 | ⏳ | ⏳ | READY |
+| Neural-Data-Interface | **Biometal** | 🟢 | ⏳ | ⏳ | READY |
+| Security-Biometric | **FuncOS** | 🟢 | ⏳ | ⏳ | READY |
 
 ## 🚀 For Remote Agents
 

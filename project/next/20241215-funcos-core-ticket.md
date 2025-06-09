@@ -1,7 +1,7 @@
 # 🎫 TICKET: FuncOS Core
 
 **Ticket ID**: 20241215-funcos-core
-**Project**: FuncOS-Core
+**Project**: FuncOS
 **Status**: 🟢 READY TO START
 **Priority**: HIGH
 **Assignee**: Kernel Team

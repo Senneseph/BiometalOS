@@ -1,7 +1,7 @@
 # 🎫 TICKET: Hardware Profiler
 
 **Ticket ID**: 20241215-hardware-profiler
-**Project**: Hardware-Profiler
+**Project**: FuncOS
 **Status**: ⏸️ WAITING FOR CORE SERVICES
 **Priority**: LOW
 **Assignee**: Hardware Team

@@ -1,7 +1,7 @@
 # 🎫 TICKET: Neural Data Interface
 
 **Ticket ID**: 20241215-neural-data-interface
-**Project**: Neural-Data-Interface
+**Project**: Biometal
 **Status**: 🟡 WAITING FOR DEPENDENCIES
 **Priority**: MEDIUM
 **Assignee**: ML Team
@@ -32,7 +32,7 @@ This project is part of the layered FuncOS/Project Biometal architecture:
 
 ### Project Structure (WebAXP Compliant)
 ```
-Neural-Data-Interface/
+Biometal/
 ├── spec/           # Data collection and neural interface APIs
 ├── app/            # Data collection engine and ML interfaces
 ├── build/          # ML pipeline build system
@@ -46,8 +46,8 @@ Neural-Data-Interface/
 
 1. **Initialize Project Structure**
    ```bash
-   mkdir -p Neural-Data-Interface/{spec,app,build,dist,docs,develop,config}
-   cd Neural-Data-Interface
+   cd Biometal
+   # Structure already exists from project reorganization
    ```
 
 2. **Configure WebAXP Environment**
@@ -58,7 +58,7 @@ Neural-Data-Interface/
    # Create project configuration
    cat > config/webaxp.yaml << EOF
    project:
-     name: "Neural-Data-Interface"
+     name: "Biometal"
      type: "neural"
      description: "Project Biometal - Neural data collection and ML optimization"
    
@@ -78,7 +78,7 @@ Neural-Data-Interface/
 
 3. **Set Environment Variables**
    ```bash
-   export PROJECT_NAME="Neural-Data-Interface"
+   export PROJECT_NAME="Biometal"
    export PROJECT_TYPE="neural"
    export TOOLCHAIN="multi"
    ```

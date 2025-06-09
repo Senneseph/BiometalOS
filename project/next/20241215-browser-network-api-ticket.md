@@ -1,7 +1,7 @@
 # 🎫 TICKET: Browser Network API
 
 **Ticket ID**: 20241215-browser-network-api
-**Project**: Browser-Network-API
+**Project**: IFLib
 **Status**: 🟡 WAITING FOR DEPENDENCIES
 **Priority**: MEDIUM
 **Assignee**: Web Team

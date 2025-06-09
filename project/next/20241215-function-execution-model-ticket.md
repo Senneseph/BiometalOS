@@ -1,7 +1,7 @@
 # 🎫 TICKET: Function Execution Model
 
 **Ticket ID**: 20241215-function-execution-model
-**Project**: Function-Execution-Model
+**Project**: FuncOS
 **Status**: 🟡 WAITING FOR DEPENDENCIES
 **Priority**: MEDIUM
 **Assignee**: Runtime Team

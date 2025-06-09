@@ -1,0 +1,464 @@
+# Project Biometal - Hardware Abstraction API Specification
+# Defines APIs for hardware-aware execution and optimization
+
+openapi: 3.0.3
+info:
+  title: FuncOS Hardware API
+  description: |
+    Hardware abstraction APIs for Project Biometal's FuncOS.
+    Provides hardware-aware execution, optimization hints, and resource management.
+  version: "0.1.0"
+
+servers:
+  - url: http://localhost:8080/api/v1/hardware
+    description: Development server
+  - url: unix:///var/run/funcos/hardware.sock
+    description: Unix socket interface
+
+paths:
+  # === Hardware Discovery ===
+  /discovery:
+    get:
+      summary: Discover hardware capabilities
+      description: Get comprehensive hardware information and capabilities
+      tags: [Discovery]
+      responses:
+        '200':
+          description: Hardware capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HardwareCapabilities'
+
+  /discovery/cpu:
+    get:
+      summary: Get CPU information
+      tags: [Discovery]
+      responses:
+        '200':
+          description: CPU information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CPUInfo'
+
+  /discovery/memory:
+    get:
+      summary: Get memory topology
+      tags: [Discovery]
+      responses:
+        '200':
+          description: Memory topology
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryTopology'
+
+  # === Execution Actualizer ===
+  /actualizer/optimize:
+    post:
+      summary: Request function optimization
+      description: Request hardware-specific optimization for a function
+      tags: [Actualizer]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptimizationRequest'
+      responses:
+        '200':
+          description: Optimization result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizationResult'
+
+  /actualizer/targets:
+    get:
+      summary: List available execution targets
+      description: Get list of available hardware execution targets
+      tags: [Actualizer]
+      responses:
+        '200':
+          description: Available targets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExecutionTarget'
+
+  # === Performance Monitoring ===
+  /performance/counters:
+    get:
+      summary: Get hardware performance counters
+      tags: [Performance]
+      parameters:
+        - name: counter_type
+          in: query
+          schema:
+            type: string
+            enum: [cpu, memory, cache, branch, instruction]
+      responses:
+        '200':
+          description: Performance counters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceCounters'
+
+  /performance/profile:
+    post:
+      summary: Start performance profiling
+      tags: [Performance]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfilingRequest'
+      responses:
+        '200':
+          description: Profiling session started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfilingSession'
+
+  /performance/profile/{sessionId}:
+    get:
+      summary: Get profiling results
+      tags: [Performance]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profiling results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfilingResults'
+
+components:
+  schemas:
+    HardwareCapabilities:
+      type: object
+      properties:
+        architecture:
+          type: string
+          enum: [x86_64, arm64, riscv64]
+        cpu:
+          $ref: '#/components/schemas/CPUInfo'
+        memory:
+          $ref: '#/components/schemas/MemoryTopology'
+        features:
+          type: array
+          items:
+            type: string
+          description: Available hardware features
+        execution_units:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExecutionUnit'
+
+    CPUInfo:
+      type: object
+      properties:
+        vendor:
+          type: string
+        model:
+          type: string
+        cores:
+          type: integer
+        threads:
+          type: integer
+        base_frequency:
+          type: integer
+          description: Base frequency in MHz
+        max_frequency:
+          type: integer
+          description: Maximum frequency in MHz
+        cache_levels:
+          type: array
+          items:
+            $ref: '#/components/schemas/CacheLevel'
+        instruction_sets:
+          type: array
+          items:
+            type: string
+          description: Supported instruction sets (SSE, AVX, NEON, etc.)
+        features:
+          type: array
+          items:
+            type: string
+          description: CPU-specific features
+
+    MemoryTopology:
+      type: object
+      properties:
+        total_memory:
+          type: integer
+          description: Total system memory in bytes
+        numa_nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NUMANode'
+        memory_types:
+          type: array
+          items:
+            type: string
+          description: Available memory types (DDR4, DDR5, HBM, etc.)
+        bandwidth:
+          type: integer
+          description: Memory bandwidth in MB/s
+
+    CacheLevel:
+      type: object
+      properties:
+        level:
+          type: integer
+        type:
+          type: string
+          enum: [instruction, data, unified]
+        size:
+          type: integer
+          description: Cache size in bytes
+        associativity:
+          type: integer
+        line_size:
+          type: integer
+          description: Cache line size in bytes
+        shared:
+          type: boolean
+          description: Whether cache is shared between cores
+
+    NUMANode:
+      type: object
+      properties:
+        node_id:
+          type: integer
+        memory_size:
+          type: integer
+          description: Memory size in bytes
+        cpu_cores:
+          type: array
+          items:
+            type: integer
+        distance_matrix:
+          type: array
+          items:
+            type: integer
+          description: Distance to other NUMA nodes
+
+    ExecutionUnit:
+      type: object
+      properties:
+        unit_id:
+          type: string
+        type:
+          type: string
+          enum: [alu, fpu, simd, vector, dsp, neural]
+        capabilities:
+          type: array
+          items:
+            type: string
+        throughput:
+          type: number
+          description: Operations per second
+        latency:
+          type: integer
+          description: Latency in cycles
+        power_consumption:
+          type: number
+          description: Power consumption in watts
+
+    OptimizationRequest:
+      type: object
+      required: [function_id, optimization_level]
+      properties:
+        function_id:
+          type: string
+        optimization_level:
+          type: string
+          enum: [none, basic, aggressive, neural]
+        target_architecture:
+          type: string
+        constraints:
+          type: object
+          properties:
+            max_memory:
+              type: integer
+            max_power:
+              type: number
+            max_latency:
+              type: integer
+        hints:
+          type: object
+          description: Optimization hints from neural interface
+
+    OptimizationResult:
+      type: object
+      properties:
+        optimization_id:
+          type: string
+        status:
+          type: string
+          enum: [success, failed, partial]
+        optimizations_applied:
+          type: array
+          items:
+            type: string
+        performance_improvement:
+          type: object
+          properties:
+            execution_time:
+              type: number
+              description: Improvement factor
+            memory_usage:
+              type: number
+              description: Memory reduction factor
+            power_consumption:
+              type: number
+              description: Power reduction factor
+        generated_code:
+          type: string
+          description: Optimized code or binary
+
+    ExecutionTarget:
+      type: object
+      properties:
+        target_id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [cpu, gpu, dsp, fpga, neural]
+        capabilities:
+          type: array
+          items:
+            type: string
+        availability:
+          type: string
+          enum: [available, busy, offline]
+        performance_rating:
+          type: integer
+          minimum: 1
+          maximum: 10
+
+    PerformanceCounters:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        counters:
+          type: object
+          additionalProperties:
+            type: integer
+        cpu_utilization:
+          type: number
+          minimum: 0
+          maximum: 100
+        memory_utilization:
+          type: number
+          minimum: 0
+          maximum: 100
+        cache_hit_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+
+    ProfilingRequest:
+      type: object
+      required: [function_id, duration]
+      properties:
+        function_id:
+          type: string
+        duration:
+          type: integer
+          description: Profiling duration in seconds
+        sample_rate:
+          type: integer
+          description: Samples per second
+        counters:
+          type: array
+          items:
+            type: string
+          description: Specific counters to monitor
+
+    ProfilingSession:
+      type: object
+      properties:
+        session_id:
+          type: string
+        status:
+          type: string
+          enum: [active, completed, failed]
+        started_at:
+          type: string
+          format: date-time
+        estimated_completion:
+          type: string
+          format: date-time
+
+    ProfilingResults:
+      type: object
+      properties:
+        session_id:
+          type: string
+        function_id:
+          type: string
+        duration:
+          type: integer
+          description: Actual profiling duration in seconds
+        samples_collected:
+          type: integer
+        performance_data:
+          type: object
+          properties:
+            execution_time:
+              type: object
+              properties:
+                min:
+                  type: integer
+                max:
+                  type: integer
+                average:
+                  type: integer
+                median:
+                  type: integer
+            memory_usage:
+              type: object
+              properties:
+                peak:
+                  type: integer
+                average:
+                  type: integer
+            cache_performance:
+              type: object
+              properties:
+                l1_hit_rate:
+                  type: number
+                l2_hit_rate:
+                  type: number
+                l3_hit_rate:
+                  type: number
+        hotspots:
+          type: array
+          items:
+            type: object
+            properties:
+              location:
+                type: string
+              percentage:
+                type: number
+        optimization_suggestions:
+          type: array
+          items:
+            type: string
