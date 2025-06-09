@@ -1,0 +1,125 @@
+version: '3.8'
+
+# Project Biometal - Nerv Development Environment
+# Specification-first, hardware-aware OS development
+services:
+  # Hardware Profiler & Setup Service
+  profiler:
+    build: ./build/environment
+    container_name: nerv-profiler
+    environment:
+      - TARGET_ARCH=${TARGET_ARCH:-auto}
+      - HARDWARE_PROFILE=${HARDWARE_PROFILE:-detect}
+    volumes:
+      - ./spec:/workspace/spec:ro
+      - ./config:/workspace/config
+      - ./develop:/workspace/develop:ro
+      - /proc/cpuinfo:/host/cpuinfo:ro
+      - /sys:/host/sys:ro
+    command: ["./develop/scripts/hardware-profile.sh"]
+    profiles: ["setup", "all"]
+
+  # Specification Validator Service
+  spec-validator:
+    image: alpine:latest
+    container_name: nerv-spec-validator
+    volumes:
+      - ./spec:/workspace/spec:ro
+      - ./config:/workspace/config:ro
+      - ./develop:/workspace/develop:ro
+    working_dir: /workspace
+    command: ["sh", "-c", "apk add --no-cache yq && ./develop/scripts/validate-specs.sh"]
+    profiles: ["validate", "build", "all"]
+
+  # Application Development Environment
+  app:
+    build:
+      context: ./app/environment
+      args:
+        - TARGET_ARCH=${TARGET_ARCH:-x86_64}
+        - BUILD_MODE=${BUILD_MODE:-debug}
+    container_name: nerv-app-dev
+    environment:
+      - FUNCOS_MODE=${FUNCOS_MODE:-development}
+      - NEURAL_INTERFACE=${NEURAL_INTERFACE:-stub}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - ./app/src:/workspace/src
+      - ./spec:/workspace/spec:ro
+      - ./config:/workspace/config:ro
+      - ./develop:/workspace/develop:ro
+    ports:
+      - "${DEV_PORT:-8080}:8080"
+      - "${DEBUG_PORT:-2345}:2345"
+    depends_on:
+      - spec-validator
+    profiles: ["dev", "all"]
+
+  # Build Actualizer Service
+  build:
+    build:
+      context: ./build/environment
+      args:
+        - TOOLCHAIN=${TOOLCHAIN:-zig}
+        - TARGET_ARCH=${TARGET_ARCH:-x86_64}
+    container_name: nerv-build
+    environment:
+      - BUILD_STRATEGY=${BUILD_STRATEGY:-off-the-shelf}
+      - PARALLEL_JOBS=${PARALLEL_JOBS:-4}
+      - OUTPUT_FORMAT=${OUTPUT_FORMAT:-elf}
+    volumes:
+      - ./app/src:/workspace/src:ro
+      - ./build:/workspace/build:ro
+      - ./dist:/workspace/dist
+      - ./spec:/workspace/spec:ro
+      - ./config:/workspace/config:ro
+      - ./develop:/workspace/develop:ro
+    depends_on:
+      - spec-validator
+      - profiler
+    profiles: ["build", "all"]
+
+  # Distribution & Testing Service
+  dist:
+    build: ./dist/environment
+    container_name: nerv-dist
+    environment:
+      - QEMU_MEMORY=${QEMU_MEMORY:-64M}
+      - QEMU_CPU=${QEMU_CPU:-486}
+      - TEST_SUITE=${TEST_SUITE:-all}
+    volumes:
+      - ./dist:/workspace/dist
+      - ./spec:/workspace/spec:ro
+      - ./config:/workspace/config:ro
+      - ./develop:/workspace/develop:ro
+    depends_on:
+      - build
+    profiles: ["test", "dist", "all"]
+
+  # Documentation Service
+  docs:
+    build: ./docs/environment
+    container_name: nerv-docs
+    environment:
+      - DOC_FORMAT=${DOC_FORMAT:-markdown}
+      - SPEC_VALIDATION=${SPEC_VALIDATION:-enabled}
+    volumes:
+      - ./docs:/workspace/docs
+      - ./spec:/workspace/spec:ro
+      - ./develop:/workspace/develop:ro
+    ports:
+      - "${DOCS_PORT:-3000}:3000"
+    profiles: ["docs", "all"]
+
+# Networks for service communication
+networks:
+  default:
+    name: nerv-network
+    driver: bridge
+
+# Shared volumes for cross-service data
+volumes:
+  build-cache:
+    name: nerv-build-cache
+  spec-cache:
+    name: nerv-spec-cache

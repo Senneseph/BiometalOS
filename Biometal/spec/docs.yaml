@@ -1,0 +1,366 @@
+# Project Biometal - Documentation Generation Specification
+# Defines how to transform /spec into comprehensive /docs
+
+documentation:
+  name: "Project Biometal Documentation"
+  description: "API-first documentation generated from specifications"
+  version: "0.1.0"
+  
+  # Core principle: Everything in /docs is generated from /spec
+  generation_principle: "spec_to_docs"
+  
+# === Source Mappings ===
+# Defines how spec files transform into documentation
+source_mappings:
+  
+  # API Specifications → API Documentation
+  api_docs:
+    sources:
+      - "spec/api/core.yaml"
+      - "spec/api/hardware.yaml" 
+      - "spec/api/neural.yaml"
+    outputs:
+      - "docs/api/core-api.md"
+      - "docs/api/hardware-api.md"
+      - "docs/api/neural-api.md"
+      - "docs/api/openapi.html"
+    generator: "openapi_to_markdown"
+    
+  # System Specifications → Implementation Guides
+  system_docs:
+    sources:
+      - "spec/systems/x86_64.yaml"
+      - "spec/systems/arm64.yaml"
+    outputs:
+      - "docs/systems/x86_64-implementation.md"
+      - "docs/systems/arm64-implementation.md"
+      - "docs/systems/architecture-comparison.md"
+    generator: "system_spec_to_guide"
+    
+  # Build Specifications → Build Documentation
+  build_docs:
+    sources:
+      - "spec/build.yaml"
+      - "config/services.yaml"
+    outputs:
+      - "docs/guides/building.md"
+      - "docs/guides/development-setup.md"
+      - "docs/guides/testing.md"
+    generator: "build_spec_to_guide"
+    
+  # Project Vision → Overview Documentation
+  overview_docs:
+    sources:
+      - "spec/PROJECT_SKETCH.md"
+      - "spec/FuncOS_OUTLINE.md"
+      - "spec/WEBAXP_OUTLINE.md"
+    outputs:
+      - "docs/README.md"
+      - "docs/overview/project-vision.md"
+      - "docs/overview/funcos-concepts.md"
+      - "docs/overview/webaxp-methodology.md"
+    generator: "markdown_processor"
+
+# === Documentation Structure ===
+structure:
+  
+  # Root Documentation
+  root:
+    - file: "README.md"
+      title: "Project Biometal Documentation"
+      description: "Main entry point for all documentation"
+      generated_from: ["spec/PROJECT_SKETCH.md", "spec/FuncOS_OUTLINE.md"]
+      
+    - file: "INDEX.md"
+      title: "Documentation Index"
+      description: "Complete index of all documentation"
+      generated_from: "auto_generated"
+      
+  # API Documentation
+  api:
+    directory: "api/"
+    description: "Complete API reference documentation"
+    files:
+      - file: "core-api.md"
+        title: "Core System API"
+        description: "Function management, scheduling, memory APIs"
+        source: "spec/api/core.yaml"
+        
+      - file: "hardware-api.md"
+        title: "Hardware Abstraction API"
+        description: "Hardware discovery, optimization, performance APIs"
+        source: "spec/api/hardware.yaml"
+        
+      - file: "neural-api.md"
+        title: "Neural Interface API"
+        description: "AI training, optimization hints, scheduling APIs"
+        source: "spec/api/neural.yaml"
+        
+      - file: "openapi.html"
+        title: "Interactive API Explorer"
+        description: "Interactive OpenAPI documentation"
+        source: "all_api_specs"
+        
+  # System Implementation Guides
+  systems:
+    directory: "systems/"
+    description: "Platform-specific implementation guides"
+    files:
+      - file: "x86_64-implementation.md"
+        title: "x86_64 Implementation Guide"
+        description: "How FuncOS APIs work on x86_64 systems"
+        source: "spec/systems/x86_64.yaml"
+        
+      - file: "arm64-implementation.md"
+        title: "ARM64 Implementation Guide"
+        description: "How FuncOS APIs work on ARM64 systems"
+        source: "spec/systems/arm64.yaml"
+        
+      - file: "architecture-comparison.md"
+        title: "Architecture Comparison"
+        description: "Comparison of features across architectures"
+        source: "all_system_specs"
+        
+  # Development Guides
+  guides:
+    directory: "guides/"
+    description: "Development and usage guides"
+    files:
+      - file: "getting-started.md"
+        title: "Getting Started"
+        description: "Quick start guide for developers"
+        source: "spec/build.yaml"
+        
+      - file: "building.md"
+        title: "Building FuncOS"
+        description: "Complete build instructions"
+        source: "spec/build.yaml"
+        
+      - file: "development-setup.md"
+        title: "Development Environment Setup"
+        description: "Setting up development environment"
+        source: "config/services.yaml"
+        
+      - file: "testing.md"
+        title: "Testing Guide"
+        description: "Running tests and validation"
+        source: ["spec/build.yaml", "config/services.yaml"]
+        
+      - file: "remote-agent.md"
+        title: "Remote Agent Usage"
+        description: "Using with Augment Remote Agent"
+        source: ".webaxp/manifest.yml"
+        
+  # Conceptual Documentation
+  overview:
+    directory: "overview/"
+    description: "High-level concepts and architecture"
+    files:
+      - file: "project-vision.md"
+        title: "Project Vision"
+        description: "High-level project goals and vision"
+        source: "spec/PROJECT_SKETCH.md"
+        
+      - file: "funcos-concepts.md"
+        title: "FuncOS Concepts"
+        description: "Core FuncOS concepts and architecture"
+        source: "spec/FuncOS_OUTLINE.md"
+        
+      - file: "webaxp-methodology.md"
+        title: "WebAXP Methodology"
+        description: "API-first development methodology"
+        source: "spec/WEBAXP_OUTLINE.md"
+
+# === Generation Rules ===
+generation_rules:
+  
+  # OpenAPI to Markdown
+  openapi_to_markdown:
+    input_format: "openapi_yaml"
+    output_format: "markdown"
+    template: "api_reference_template"
+    includes:
+      - "endpoint_documentation"
+      - "schema_definitions"
+      - "example_requests"
+      - "example_responses"
+      - "error_codes"
+      
+  # System Spec to Implementation Guide
+  system_spec_to_guide:
+    input_format: "yaml"
+    output_format: "markdown"
+    template: "implementation_guide_template"
+    includes:
+      - "architecture_overview"
+      - "api_mappings"
+      - "performance_characteristics"
+      - "build_configuration"
+      - "testing_strategy"
+      - "limitations"
+      
+  # Build Spec to Guide
+  build_spec_to_guide:
+    input_format: "yaml"
+    output_format: "markdown"
+    template: "build_guide_template"
+    includes:
+      - "requirements"
+      - "build_steps"
+      - "configuration_options"
+      - "troubleshooting"
+      
+  # Markdown Processor
+  markdown_processor:
+    input_format: "markdown"
+    output_format: "markdown"
+    processing:
+      - "extract_sections"
+      - "add_navigation"
+      - "cross_reference_links"
+      - "table_of_contents"
+
+# === Templates ===
+templates:
+  
+  # API Reference Template
+  api_reference_template:
+    sections:
+      - "title_and_description"
+      - "base_url_and_authentication"
+      - "endpoints_by_tag"
+      - "schema_definitions"
+      - "examples"
+      - "error_handling"
+    format: "github_flavored_markdown"
+    
+  # Implementation Guide Template
+  implementation_guide_template:
+    sections:
+      - "architecture_overview"
+      - "api_implementation_details"
+      - "performance_characteristics"
+      - "build_and_deployment"
+      - "testing_and_validation"
+      - "known_limitations"
+    format: "github_flavored_markdown"
+    
+  # Build Guide Template
+  build_guide_template:
+    sections:
+      - "prerequisites"
+      - "quick_start"
+      - "detailed_build_steps"
+      - "configuration_options"
+      - "testing_instructions"
+      - "troubleshooting"
+    format: "github_flavored_markdown"
+
+# === Cross-References ===
+cross_references:
+  
+  # Automatic link generation between documents
+  auto_linking:
+    api_to_implementation:
+      - source: "docs/api/*.md"
+        target: "docs/systems/*-implementation.md"
+        link_text: "Implementation details for {architecture}"
+        
+    implementation_to_api:
+      - source: "docs/systems/*-implementation.md"
+        target: "docs/api/*.md"
+        link_text: "API reference"
+        
+    guides_to_specs:
+      - source: "docs/guides/*.md"
+        target: "spec/*.yaml"
+        link_text: "View specification"
+
+# === Validation Rules ===
+validation:
+  
+  # Documentation completeness checks
+  completeness:
+    - rule: "all_api_endpoints_documented"
+      description: "Every API endpoint must have documentation"
+      
+    - rule: "all_systems_have_guides"
+      description: "Every system spec must have implementation guide"
+      
+    - rule: "all_build_steps_documented"
+      description: "All build steps must be documented"
+      
+  # Link validation
+  links:
+    - rule: "no_broken_internal_links"
+      description: "All internal links must be valid"
+      
+    - rule: "spec_references_valid"
+      description: "All references to spec files must be valid"
+      
+  # Content validation
+  content:
+    - rule: "examples_are_valid"
+      description: "All API examples must be syntactically valid"
+      
+    - rule: "code_blocks_highlighted"
+      description: "All code blocks must have language specification"
+
+# === Generation Automation ===
+automation:
+  
+  # Triggers for regeneration
+  triggers:
+    - event: "spec_file_changed"
+      action: "regenerate_affected_docs"
+      
+    - event: "api_spec_updated"
+      action: "regenerate_api_docs"
+      
+    - event: "system_spec_updated"
+      action: "regenerate_system_guides"
+      
+  # Build integration
+  build_integration:
+    - stage: "pre_build"
+      action: "validate_specs"
+      
+    - stage: "build"
+      action: "generate_docs"
+      
+    - stage: "post_build"
+      action: "validate_generated_docs"
+      
+  # Continuous integration
+  ci_integration:
+    - check: "docs_up_to_date"
+      description: "Verify docs match current specs"
+      
+    - check: "no_broken_links"
+      description: "Verify all links are valid"
+      
+    - check: "examples_work"
+      description: "Verify all examples are functional"
+
+# === Output Configuration ===
+output:
+  
+  # Format settings
+  markdown:
+    flavor: "github_flavored_markdown"
+    line_length: 80
+    table_of_contents: true
+    syntax_highlighting: true
+    
+  # File organization
+  organization:
+    index_files: true
+    navigation_files: true
+    cross_reference_files: true
+    
+  # Metadata
+  metadata:
+    generated_timestamp: true
+    source_file_references: true
+    last_updated: true
+    version_info: true

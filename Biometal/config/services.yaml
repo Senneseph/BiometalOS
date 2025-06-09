@@ -1,0 +1,181 @@
+# Project Biometal - Service Configuration
+# Hardware-aware service definitions for FuncOS development
+
+# === Service Definitions ===
+services:
+  profiler:
+    runtime:
+      timeout: 30
+      retry_attempts: 3
+      resource_limits:
+        memory: "512MB"
+        cpu: "0.5"
+    
+    hardware_detection:
+      cpu_features: ["sse", "avx", "avx2", "avx512"]
+      memory_topology: true
+      cache_hierarchy: true
+      virtualization: ["kvm", "vmx", "svm"]
+    
+    output:
+      format: "yaml"
+      location: "./config/hardware-profile.yaml"
+      
+  spec_validator:
+    validation_rules:
+      yaml_syntax: true
+      schema_compliance: true
+      cross_references: true
+      dependency_cycles: false
+    
+    schemas:
+      - "./spec/schemas/funcos.schema.yaml"
+      - "./spec/schemas/webaxp.schema.yaml"
+      - "./spec/schemas/hardware.schema.yaml"
+    
+    output:
+      format: "json"
+      location: "./config/validation-report.json"
+
+  app:
+    development:
+      hot_reload: true
+      debug_symbols: true
+      optimization_level: 0
+      
+    networking:
+      bind_address: "0.0.0.0"
+      ports:
+        http: 8080
+        debugger: 2345
+        
+    funcos_runtime:
+      execution_mode: "interpreted"
+      neural_interface: "mock"
+      introspection_level: "full"
+      memory_tracking: true
+      
+    volumes:
+      source_mount: "/workspace/src"
+      spec_mount: "/workspace/spec"
+      config_mount: "/workspace/config"
+
+  build:
+    compilation:
+      toolchain: "zig"
+      optimization_levels: ["debug", "release", "profile"]
+      target_architectures: ["x86_64", "arm64"]
+      
+    build_strategy:
+      off_the_shelf:
+        prefer_prebuilt: true
+        fallback_to_source: true
+        cache_artifacts: true
+        
+    parallelization:
+      max_jobs: 4
+      memory_per_job: "1GB"
+      
+    output:
+      formats: ["elf", "bin", "iso"]
+      location: "./dist"
+      
+    testing:
+      unit_tests: true
+      integration_tests: true
+      static_analysis: true
+
+  dist:
+    virtualization:
+      qemu:
+        system: "qemu-system-i386"
+        memory: "64M"
+        cpu: "486"
+        display: "none"
+        serial: "stdio"
+        
+    testing:
+      boot_test: true
+      function_test: true
+      performance_test: false
+      
+    packaging:
+      formats: ["iso", "img", "docker"]
+      compression: "gzip"
+      
+  docs:
+    generation:
+      source_formats: ["markdown", "yaml", "code-comments"]
+      output_formats: ["html", "pdf", "markdown"]
+      
+    serving:
+      port: 3000
+      live_reload: true
+      
+    validation:
+      link_checking: true
+      spec_sync: true
+
+# === Cross-Service Communication ===
+communication:
+  networks:
+    internal:
+      driver: "bridge"
+      subnet: "172.20.0.0/16"
+      
+  shared_volumes:
+    build_cache:
+      size: "2GB"
+      cleanup_policy: "lru"
+      
+    spec_cache:
+      size: "100MB"
+      ttl: "1h"
+
+# === Resource Management ===
+resources:
+  global_limits:
+    total_memory: "6GB"
+    total_cpu: "4.0"
+    
+  service_priorities:
+    spec_validator: "high"
+    profiler: "high"
+    build: "medium"
+    app: "medium"
+    dist: "low"
+    docs: "low"
+
+# === Environment-Specific Overrides ===
+environments:
+  development:
+    resource_limits: "relaxed"
+    logging_level: "debug"
+    hot_reload: true
+    
+  production:
+    resource_limits: "strict"
+    logging_level: "warn"
+    optimization: "maximum"
+    
+  testing:
+    resource_limits: "minimal"
+    logging_level: "info"
+    parallel_execution: true
+
+# === Integration Settings ===
+integrations:
+  zealos:
+    vm_memory: "64M"
+    vm_cpu: "486"
+    iso_location: "./zealos/zeal.iso"
+    
+  neural_interface:
+    stub_mode: true
+    training_data_collection: false
+    optimization_hints: "mock"
+    
+  remote_agent:
+    heartbeat_interval: 30
+    status_reporting: true
+    parallel_task_limit: 3
